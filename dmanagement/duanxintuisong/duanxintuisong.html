@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../../css/myequipment.css">
+    <link rel="stylesheet" href="../../css/duanxintuisong.css">
+    <script src="../../js/jquery.min.js"></script>
+    <script src="../../js/fontzize.js"></script>
+    <script src="../../js/vue.min.js"></script>
+    <script src="../../js/jsonAjax.js"></script>
+    <style>
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav @click="goback"><img src="../../imgs/arrow_left.png"></nav>
+        <nav>短信推送提醒</nav>
+        <nav></nav>
+    </header>
+    <section>
+        <div>
+            <ul>
+                <li class="yi" @click="duanx_c">手机号<img src="../../imgs/arrow_right.png" alt=""></li>
+                <li class="er">超时提醒推送
+                    <div style="float: right;width: 65%;" class="switch clearfix"><p class="s_one"><span class="s_s" @click="jiaoz"></span><input type="hidden" class="s_s_z" value="1"/></p></div>
+                </li>
+                <!-- <li class="san"></li> -->
+                <li class="si" @click="chao_dm">超时短信模板<span>{{chao_sm}}</span><img src="../../imgs/arrow_right.png" alt=""></li>
+                <li class="wu">漏服推送提醒
+                    <div style="float: right;width: 65%;" class="switch01 clearfix"><p class="s_one01"><span class="s_s01" @click="jiaoz01"></span><input type="hidden" class="s_s_z01" value="1"/></p></div>
+                </li>
+                <li class="liu" @click="lou_dm">漏服短信模板<span>{{lou_sm}}</span><img src="../../imgs/arrow_right.png" alt=""></li>
+            </ul>
+            <div class="anniu"><button class="btn" @click="que_btn">确定</button></div>
+        </div>
+        <!-- 填写手机号码模块弹窗 -->
+        <div class="shouJ_h" v-show="hidden.isShowShouJ">
+            <header>
+                <nav @click="goback_h"><img src="../../imgs/arrow_left.png"></nav>
+                <nav>手机号</nav>
+                <nav></nav>
+            </header>
+            <div class="shou_hao">
+                <ul>
+                    <li class="clearfix"><span>手机号1</span><!-- <input class="guo_ma guo_ma01" v-model="guo_Ma" type="text"> --><input class="tel" v-model="shou_hao01" type="text" name=""></li>
+                    <li class="clearfix"><span>手机号2</span><!-- <input class="guo_ma guo_ma02" v-model="guo_Ma" type="text"> --><input class="tel" v-model="shou_hao02" type="text" name=""></li>
+                    <li class="clearfix"><span>手机号3</span><!-- <input class="guo_ma guo_ma03" v-model="guo_Ma" type="text"> --><input class="tel" v-model="shou_hao03" type="text" name=""></li>
+                </ul>
+            </div>
+            <div class="shou_q"><button class="duan_b" @click="duan_f">确定</button></div>
+        </div>
+        <!-- 超时短信模板 -->
+        <div class="shouJH" v-show="hidden.isShowDuan">
+            <header>
+                <nav @click="goback_s"><img src="../../imgs/arrow_left.png"></nav>
+                <nav>短信模板</nav>
+                <nav></nav>
+            </header>
+            <div class="chao_moban01">
+                <div class="chao_moban0101">
+                    <p><input class="chao_i chao_i01" type="radio" value="1" name="radios" checked="checked"><span class="duan_m">短信模板1</span></p>
+                    <div><p class="chao_con">【智能药盒】尊敬的用户，您忘记吃药啦！</p></div>
+                </div>
+                <div class="chao_moban0102">
+                    <p><input class="chao_i chao_i02" type="radio" value="2" name="radios"><span class="duan_m">短信模板2</span></p>
+                    <div><p class="chao_con">【智能药盒】医生说，准时吃药才能好得快。您超时啦！</p></div>
+                </div>
+                <div class="chao_moban0103">
+                    <p><input class="chao_i chao_i03" type="radio" value="3" name="radios"><span class="duan_m">短信模板3</span></p>
+                    <div><p class="chao_con">【智能药盒】亲爱的用户，不要放弃治疗。吃药吧！</p></div>
+                </div>
+            </div>
+        </div>
+        <!-- 漏服短信模板 -->
+        <div class="shouLF" v-show="hidden.isShowLou">
+            <header>
+                <nav @click="goback_l"><img src="../../imgs/arrow_left.png"></nav>
+                <nav>短信模板</nav>
+                <nav></nav>
+            </header>
+            <div class="lou_moban01">
+                <div class="lou_moban0101">
+                    <p><input class="lou_i chao_i01" type="radio" value="1" name="radios01" checked="checked"><span class="lduan_m">短信模板1</span></p>
+                    <div><p class="lou_con">{{duan_txt01}}</p></div>
+                </div>
+                <div class="lou_moban0102">
+                    <p><input class="lou_i lou_i02" type="radio" value="2" name="radios01"><span class="lduan_m">短信模板2</span></p>
+                    <div><p class="lou_con">{{duan_txt02}}</p></div>
+                </div>
+                <div class="lou_moban0103">
+                    <p><input class="lou_i lou_i03" type="radio" value="3" name="radios01"><span class="lduan_m">短信模板3</span></p>
+                    <div><p class="lou_con">{{duan_txt03}}</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 未填写手机号 -->
+        <div class="wei_tian" v-show="hidden.isShowWei">{{weiZhuang}}</div>
+    </section>
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            hidden:{
+                isShowShouJ:false,//填写手机号码模块显隐
+                isShowWei:false,//未填写的各种状态显隐
+                isShowDuan:false,//超时短信模板显隐
+                isShowLou:false,//漏服短信模板显隐
+            },
+            chao_sm:'短信模板1',//超时短信模板选择后的信息
+            lou_sm:'短信模板1',//漏服短信模板选择后的信息
+            guo_Ma:[],//国码
+
+            shou_hao01:'',//手机号
+            shou_hao02:'',
+            shou_hao03:'',
+
+            tel:[],//向后端传手机号码
+
+            weiZhuang:'',//未填写手机号弹窗内容
+
+            index01:'0',//超时短信选择下标
+            index02:'0',//漏服短信选择下标
+
+            duan_txt01:'',//短信模板
+            duan_txt02:'',
+            duan_txt03:'',
+
+            is_p_chao:'',// 超时提醒推送开关状态
+            is_p_lou:'',// 漏服提醒推送开关状态
+
+            p_chao_t:'1',// 后端返回的第几个超时模板
+            p_lou_t:'1',// 后端返回的第几个漏服模板
+        },
+        computed:{
+            
+        },
+        
+        mounted: function () {
+            var _this = this;
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+            var myurl = GetQueryString("device_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id =Number(GetQueryString("device_id").substr(1));
+            }
+            else {
+                //window.location.href = "http://192.168.0.138";
+            }
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.role = Number(GetQueryString("role").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var token = GetQueryString("token");
+            if (token != null && role.toString().length > 1) {
+                _this.token =GetQueryString("token").substr(1);
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var uid = GetQueryString("uid");
+            if (uid != null && role.toString().length > 1) {
+                _this.uid = Number(GetQueryString("uid").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            //获取外部链接参数
+
+            jsonAjax('/Home/Device/get_device_bundle_list',
+                {access_token:_this.token, device_id: _this.device_id, uid: _this.uid}
+            ).done(function (data) {
+                if(data.code==40002){
+                    window.location.href=golinks('weixinsq.html')
+                }
+                else if(data.code==40010){
+                    window.location.href=golinks('weixinsq.html')
+                }
+                else if(data.code ==0){
+                    console.log(data)
+                    _this.msg=data.data;
+                    if(_this.role==1){
+                        for(var i=0;i<_this.msg.length;i++){
+                            _this.$set(_this.msg[i],'jieban',false);
+                        }
+                    }else  if(_this.role==2){
+                        for(var i=0;i<_this.msg.length;i++){
+                            if(_this.msg[i].role==1||_this.msg[i].uid!=_this.uid){
+                                _this.$set(_this.msg[i],'jieban',false);
+                            }else {
+                                    _this.$set(_this.msg[i],'jieban',true);
+                            }
+                        }
+                    }
+                }
+            })
+                .fail(function () {
+                    console.log("error");
+                });
+
+            _this.aShou()
+        },
+        methods: {
+            goback:function () {
+                var _this=this;
+                window.location.href=golinks("dmanagement/notifications.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&off=1")
+            },
+            goback_h:function () {//点击填写手机号码返回键
+                var _this=this;
+                _this.hidden.isShowShouJ = false;
+                _this.aShou()
+            },
+            goback_s:function () {//点击超时短信模板返回键
+                var _this=this;
+                for(var i=0;i<$('.chao_i').length;i++){
+                    if($($('.chao_i')[i]).is(':checked')){
+                        _this.index01 = i;
+                    }
+                }
+                // $($('.chao_con')[index01]).html();
+                _this.chao_sm = $($('.duan_m')[_this.index01]).html();
+                _this.hidden.isShowDuan = false;
+            },
+            goback_l:function () {//点击漏服短信模板返回键
+                var _this=this;
+                for(var i=0;i<$('.lou_i').length;i++){
+                    if($($('.lou_i')[i]).is(':checked')){
+                        _this.index02 = i;
+                    }
+                }
+                // $($('.chao_con')[index02]).html();
+                _this.lou_sm = $($('.lduan_m')[_this.index02]).html();
+                _this.hidden.isShowLou = false;
+            },
+            chao_dm:function(){//点击超时短信推送模板
+                var _this=this;
+                _this.hidden.isShowDuan = true;
+            },
+            lou_dm(){//点击漏服短信推送模板
+                var _this=this;
+                _this.hidden.isShowLou = true;
+            },
+            duanx_c(){//点击出现手机号输入
+                var _this=this;
+                _this.hidden.isShowShouJ = true;
+            },
+            jiaoz(){//短信超时提醒推送开关
+                if($('.s_s_z').val() == '1'){
+                  $('.s_s').css('left','15px');
+                  $('.s_one').css('background','#00cc33');
+                  $('.s_one').css('border','2px solid #00cc33');
+                  $('.s_s_z').val('2');
+                }else if($('.s_s_z').val() == '2'){
+                  $('.s_s').css('left','0px');
+                  $('.s_one').css('background','#ccc');
+                  $('.s_one').css('border','2px solid #ccc');
+                  $('.s_s_z').val('1');
+                }
+            },
+            jiaoz01(){//短信漏服提醒推送开关
+                if($('.s_s_z01').val() == '1'){
+                  $('.s_s01').css('left','15px');
+                  $('.s_one01').css('background','#00cc33');
+                  $('.s_one01').css('border','2px solid #00cc33');
+                  $('.s_s_z01').val('2');
+                }else if($('.s_s_z01').val() == '2'){
+                  $('.s_s01').css('left','0px');
+                  $('.s_one01').css('background','#ccc');
+                  $('.s_one01').css('border','2px solid #ccc');
+                  $('.s_s_z01').val('1');
+                }
+            },
+            
+            que_btn(){//点击确定按钮
+                var re = /^[1][3,4,5,7,8][0-9]{9}$/; //验证电话号码正则
+                var _this = this;
+                _this.is_p_chao = $('.s_s_z').val();
+                _this.is_p_lou = $('.s_s_z01').val();
+                if($('.s_s_z').val() == '2'&& $('.s_s_z01').val() == '1'){//超时开启、漏服不开启
+                    if(_this.shou_hao01 == ''&&_this.shou_hao02 == ''&&_this.shou_hao03 == ''){//当邮箱地址未填写时
+                        _this.weiZhuang = '未填写手机号';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.shou_hao01 != ''&&!re.test(_this.shou_hao01)){//邮件地址填写错误
+                        _this.weiZhuang = '手机号格式错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.shou_hao02 != ''&&!re.test(_this.shou_hao02)){
+                        _this.weiZhuang = '手机号格式错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.shou_hao03 != ''&&!re.test(_this.shou_hao03)){
+                        _this.weiZhuang = '手机号格式错误';
+                        _this.fenWei();
+                        return;
+                    }
+                    jsonAjax('/Home/Device/phonePushSetALL',
+                        {access_token:_this.token, device_id: _this.device_id, uid: _this.uid,is_p_chao:_this.is_p_chao,is_p_lou:_this.is_p_lou,p_chao_t:_this.index01*1+1*1,p_lou_t:""}
+                        ).done(function (data) {
+                            if(data.code == '0'){
+                                window.location.href= golinks("dmanagement/notifications.html?token="+_this.token+"&uid="+_this.uid+"&device_id="+_this.device_id+"&role="+_this.role+"&is_skips="+_this.is_skips+"")
+                            }
+                        })
+                    .fail(function () {
+                        console.log("error");
+                    }); 
+
+                    // return;
+                }else if($('.s_s_z').val() == '2' && $('.s_s_z01').val() == '2'){//超时与漏服推送都开启
+
+                    if(_this.shou_hao01 == ''&&_this.shou_hao02 == ''&&_this.shou_hao03 == ''){//当邮箱地址未填写时
+                        _this.weiZhuang = '未填写手机号';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.shou_hao01 != ''&&!re.test(_this.shou_hao01)){//邮件地址填写错误
+                        _this.weiZhuang = '手机号格式错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.shou_hao02 != ''&&!re.test(_this.shou_hao02)){
+                        _this.weiZhuang = '手机号格式错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.shou_hao03 != ''&&!re.test(_this.shou_hao03)){
+                        _this.weiZhuang = '手机号格式错误';
+                        _this.fenWei();
+                        return;
+                    }
+
+                    
+                    jsonAjax('/Home/Device/phonePushSetALL',
+                        {access_token:_this.token, device_id: _this.device_id, uid: _this.uid,is_p_chao:_this.is_p_chao,is_p_lou:_this.is_p_lou,p_chao_t:_this.index01*1+1*1,p_lou_t:_this.index02*1+1*1}
+                        ).done(function (data) {
+                            if(data.code == '0'){
+                                window.location.href= golinks("dmanagement/notifications.html?token="+_this.token+"&uid="+_this.uid+"&device_id="+_this.device_id+"&role="+_this.role+"&is_skips="+_this.is_skips+"")
+                            }
+                        })
+                    .fail(function () {
+                        console.log("error");
+                    }); 
+
+                    // return; 
+                }else if($('.s_s_z').val() == '1'&& $('.s_s_z01').val() == '2'){//超时关闭、漏服推送开启
+                    if(_this.shou_hao01 == ''&&_this.shou_hao02 == ''&&_this.shou_hao03 == ''){//当邮箱地址未填写时
+                        _this.weiZhuang = '未填写手机号';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.shou_hao01 != ''&&!re.test(_this.shou_hao01)){//邮件地址填写错误
+                        _this.weiZhuang = '手机号格式错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.shou_hao02 != ''&&!re.test(_this.shou_hao02)){
+                        _this.weiZhuang = '手机号格式错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.shou_hao03 != ''&&!re.test(_this.shou_hao03)){
+                        _this.weiZhuang = '手机号格式错误';
+                        _this.fenWei();
+                        return;
+                    }
+                    jsonAjax('/Home/Device/phonePushSetALL',
+                        {access_token:_this.token, device_id: _this.device_id, uid: _this.uid,is_p_chao:_this.is_p_chao,is_p_lou:_this.is_p_lou,p_chao_t:"",p_lou_t:_this.index02*1+1*1}
+                        ).done(function (data) {
+                            if(data.code == '0'){
+                                window.location.href= golinks("dmanagement/notifications.html?token="+_this.token+"&uid="+_this.uid+"&device_id="+_this.device_id+"&role="+_this.role+"&is_skips="+_this.is_skips+"")
+                            }
+                        })
+                    .fail(function () {
+                        console.log("error");
+                    }); 
+
+                    // return;
+                }else if($('.s_s_z').val() == '1' && $('.s_s_z01').val() == '1'){//超时与漏服推送都不开启
+                    jsonAjax('/Home/Device/phonePushSetALL',
+                        {access_token:_this.token, device_id: _this.device_id, uid: _this.uid,is_p_chao:"",is_p_lou:"",p_chao_t:"",p_lou_t:""}
+                        ).done(function (data) {
+                            if(data.code == '0'){
+                                window.location.href= golinks("dmanagement/notifications.html?token="+_this.token+"&uid="+_this.uid+"&device_id="+_this.device_id+"&role="+_this.role+"&is_skips="+_this.is_skips+"")
+                            }
+                        })
+                    .fail(function () {
+                        console.log("error");
+                    }); 
+                }
+
+                _this.fenWei();
+
+            },
+            // 封装不符规则弹窗
+            fenWei(){
+                var _this = this;
+                _this.hidden.isShowWei = true;
+                $('.btn').addClass('active');
+                setTimeout(function(){
+                    _this.hidden.isShowWei = false;
+                    $('.btn').removeClass('active');
+                }, 2000);
+            },
+            // 封装确定按钮防止多次点击
+            fenWei02(){
+                var _this = this;
+                _this.hidden.isShowWei = true;
+                $('.duan_b').addClass('active');
+                setTimeout(function(){
+                    _this.hidden.isShowWei = false;
+                    $('.duan_b').removeClass('active');
+                }, 2000);
+
+            },
+
+            // 手机号码处确定返回数据后端
+            duan_f(){
+                var _this = this;
+                var re = /^[1][3,4,5,7,8][0-9]{9}$/; //验证电话号码正则
+                var _this = this;
+                if(_this.shou_hao01 != ''&&!re.test(_this.shou_hao01)){//邮件地址填写错误
+                    _this.weiZhuang = '手机号格式错误';
+                    _this.fenWei02();
+                    return;
+                }else if(_this.shou_hao02 != ''&&!re.test(_this.shou_hao02)){
+                    _this.weiZhuang = '手机号格式错误';
+                    _this.fenWei02();
+                    return;
+                }else if(_this.shou_hao03 != ''&&!re.test(_this.shou_hao03)){
+                    _this.weiZhuang = '手机号格式错误';
+                    _this.fenWei02();
+                    return;
+                }
+
+                if(_this.shou_hao01 != '' && _this.shou_hao02 != '' && _this.shou_hao03 != '' ){
+                    _this.tel = [_this.shou_hao01,_this.shou_hao02,_this.shou_hao03];
+                    _this.guo_Ma = ["86","86","86"];
+                    jsonAjax('/Home/Device/phonePushSetNember',
+                        JSON.stringify({access_token:_this.token, device_id: _this.device_id, uid: _this.uid,phone:[{country_code:_this.guo_Ma[0],num:_this.tel[0]},{country_code:_this.guo_Ma[1],num:_this.tel[1]},{country_code:_this.guo_Ma[2],num:_this.tel[2]}]})
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            _this.hidden.isShowShouJ = false;
+                            // _this.aShou();
+                        }else{
+                            _this.fenWei02();
+                            _this.weiZhuang = data.msg;
+                            
+                        }
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                }else if(_this.shou_hao01 != '' && _this.shou_hao02 != '' && _this.shou_hao03 == ''){
+                    _this.tel = [_this.shou_hao01,_this.shou_hao02];
+                    _this.guo_Ma = ["86","86"];
+                    jsonAjax('/Home/Device/phonePushSetNember',
+                        JSON.stringify({access_token:_this.token, device_id: _this.device_id, uid: _this.uid,phone:[{country_code:_this.guo_Ma[0],num:_this.tel[0]},{country_code:_this.guo_Ma[1],num:_this.tel[1]}]})
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            _this.hidden.isShowShouJ = false;
+                            // _this.aShou();
+                        }else{
+                            _this.fenWei02();
+                            _this.weiZhuang = data.msg;
+                            
+                        }
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                }else if(_this.shou_hao01 != '' && _this.shou_hao02 == '' && _this.shou_hao03 != ''){
+                    _this.tel = [_this.shou_hao01,_this.shou_hao03];
+                    _this.guo_Ma = ["86","86"];
+                    jsonAjax('/Home/Device/phonePushSetNember',
+                        JSON.stringify({access_token:_this.token, device_id: _this.device_id, uid: _this.uid,phone:[{country_code:_this.guo_Ma[0],num:_this.tel[0]},{country_code:_this.guo_Ma[1],num:_this.tel[1]}]})
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            _this.hidden.isShowShouJ = false;
+                            // _this.aShou();
+                        }else{
+                            _this.fenWei02();
+                            _this.weiZhuang = data.msg;
+                            
+                        }
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                }else if(_this.shou_hao01 != '' && _this.shou_hao02 == '' && _this.shou_hao03 == ''){
+                    _this.tel = [_this.shou_hao01];
+                    _this.guo_Ma = ["86"];
+                    jsonAjax('/Home/Device/phonePushSetNember',
+                        JSON.stringify({access_token:_this.token, device_id: _this.device_id, uid: _this.uid,phone:[{country_code:_this.guo_Ma[0],num:_this.tel[0]}]})
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            _this.hidden.isShowShouJ = false;
+                            // _this.aShou();
+                        }else{
+                            _this.fenWei02();
+                            _this.weiZhuang = data.msg;
+                            
+                        }
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                }else if(_this.shou_hao01 == '' && _this.shou_hao02 != '' && _this.shou_hao03 != ''){
+                    _this.tel = [_this.shou_hao02,_this.shou_hao03];
+                    _this.guo_Ma = ["86","86"];
+                    jsonAjax('/Home/Device/phonePushSetNember',
+                        JSON.stringify({access_token:_this.token, device_id: _this.device_id, uid: _this.uid,phone:[{country_code:_this.guo_Ma[0],num:_this.tel[0]},{country_code:_this.guo_Ma[1],num:_this.tel[1]}]})
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            _this.hidden.isShowShouJ = false;
+                            // _this.aShou();
+                        }else{
+                            _this.fenWei02();
+                            _this.weiZhuang = data.msg;
+                            
+                        }
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                }else if(_this.shou_hao01 == '' && _this.shou_hao02 != '' && _this.shou_hao03 == ''){
+                    _this.tel = [_this.shou_hao02];
+                    _this.guo_Ma = ["86"];
+                    jsonAjax('/Home/Device/phonePushSetNember',
+                        JSON.stringify({access_token:_this.token, device_id: _this.device_id, uid: _this.uid,phone:[{country_code:_this.guo_Ma[0],num:_this.tel[0]}]})
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            _this.hidden.isShowShouJ = false;
+                            // _this.aShou();
+                        }else{
+                            _this.fenWei02();
+                            _this.weiZhuang = data.msg;
+                            
+                        }
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                }else if(_this.shou_hao01 == '' && _this.shou_hao02 == '' && _this.shou_hao03 != ''){
+                    _this.tel = [_this.shou_hao03];
+                    _this.guo_Ma = ["86"];
+                    jsonAjax('/Home/Device/phonePushSetNember',
+                        JSON.stringify({access_token:_this.token, device_id: _this.device_id, uid: _this.uid,phone:[{country_code:_this.guo_Ma[0],num:_this.tel[0]}]})
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            _this.hidden.isShowShouJ = false;
+                            // _this.aShou();
+                        }else{
+                            _this.fenWei02();
+                            _this.weiZhuang = data.msg;
+                            
+                        }
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                }else if(_this.shou_hao01 == '' && _this.shou_hao02 != '' && _this.shou_hao03 != ''){
+                    _this.tel = [_this.shou_hao02,_this.shou_hao03];
+                    _this.guo_Ma = ["86","86"];
+                    jsonAjax('/Home/Device/phonePushSetNember',
+                        JSON.stringify({access_token:_this.token, device_id: _this.device_id, uid: _this.uid,phone:[{country_code:_this.guo_Ma[0],num:_this.tel[0]},{country_code:_this.guo_Ma[1],num:_this.tel[1]}]})
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            _this.hidden.isShowShouJ = false;
+                            // _this.aShou();
+                        }else{
+                            _this.fenWei02();
+                            _this.weiZhuang = data.msg;
+                            
+                        }
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                }else if(_this.shou_hao01 == '' && _this.shou_hao02 == '' && _this.shou_hao03 == ''){
+                    _this.tel = [];
+                    _this.guo_Ma = [];
+                    jsonAjax('/Home/Device/phonePushSetNember',
+                        JSON.stringify({access_token:_this.token, device_id: _this.device_id, uid: _this.uid,phone:[]})
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            _this.hidden.isShowShouJ = false;
+                            // _this.aShou();
+                        }else{
+                            _this.fenWei02();
+                            _this.weiZhuang = data.msg;
+                            
+                        }
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                }
+                console.log(_this.tel)
+                console.log(_this.guo_Ma)
+                // _this.guo_Ma = ["86","86","86"];
+                
+            },
+
+            aShou(){
+                var _this = this;
+                //进入短信推送页面请求接口
+                jsonAjax('/Home/Device/phoneGetAllInfo',
+                    {access_token:_this.token, device_id: _this.device_id, uid: _this.uid}
+                ).done(function (data) {
+                    console.log(data)
+
+                    _this.is_p_chao = data.data.is_p_chao;//超时短信推送开关状态
+                    _this.is_p_lou = data.data.is_p_lou;//漏服短信推送开关状态
+
+                    // _this.p_chao_t = data.data.p_chao_t;// 后端返回第几个超时模板
+                    // _this.p_lou_t = data.data.p_lou_t;// 后端返回第几个漏服模板
+                    
+                    _this.index01 = data.data.p_chao_t-1;//一进入短信推送页面，判定后端传过来的是模板几
+                    _this.index02 = data.data.p_lou_t-1;
+                    if(data.data.p_chao_t == '0'){
+                        _this.index01 = 0;
+                    }
+                    if(data.data.p_lou_t == '0'){
+                        _this.index02 = 0;
+                    }
+
+                    $($('.chao_i')[_this.index01]).prop('checked',true);//在选择模板的地方选中相对应的超时模板
+                    $($('.lou_i')[_this.index02]).prop('checked',true);//在选择模板的地方选中相对应的漏服模板
+                    _this.chao_sm = $($('.duan_m')[_this.index01]).html();//进入页面时在页面中显示第几个超时模板
+                    _this.lou_sm = $($('.lduan_m')[_this.index02]).html();//进入页面时在页面中显示第几个漏服模板
+
+
+                    if(data.data.phone[0] == undefined){//当接收到的电话号码为undefined时
+                        _this.shou_hao01 = '';
+                    }else{
+                        _this.shou_hao01 = data.data.phone[0].num;// 接收电话号码
+                    }
+                    if(data.data.phone[1] == undefined){
+                        _this.shou_hao02 = '';
+                    }else{
+                         _this.shou_hao02 = data.data.phone[1].num;
+                    }
+                    if(data.data.phone[2] == undefined){
+                        _this.shou_hao03 = '';
+                    }else{
+                        _this.shou_hao03 = data.data.phone[2].num;
+                    }
+
+                    // 判定超时开关是否开启
+                    if(_this.is_p_chao == '1'){
+                        $('.s_s').css('left','0px');
+                        $('.s_one').css('background','#ccc');
+                        $('.s_one').css('border','2px solid #ccc');
+                        $('.s_s_z').val('1');
+                    }else if(_this.is_p_chao == '2'){
+                        $('.s_s').css('left','15px');
+                        $('.s_one').css('background','#00cc33');
+                        $('.s_one').css('border','2px solid #00cc33');
+                        $('.s_s_z').val('2');
+                    }
+
+                    // 判定漏服开关是否开启
+                    if(_this.is_p_lou == '1'){
+                        $('.s_s01').css('left','0px');
+                        $('.s_one01').css('background','#ccc');
+                        $('.s_one01').css('border','2px solid #ccc');
+                        $('.s_s_z01').val('1');
+                    }else if(_this.is_p_lou == '2'){
+                        $('.s_s01').css('left','15px');
+                        $('.s_one01').css('background','#00cc33');
+                        $('.s_one01').css('border','2px solid #00cc33');
+                        $('.s_s_z01').val('2');
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+
+
+                //短信模板信息回显
+                jsonAjax('/Home/Device/phoneGetTemplateInfo',
+                    {access_token:_this.token, device_id: _this.device_id, uid: _this.uid}
+                ).done(function (data) {
+                    console.log(data)
+                    _this.duan_txt01 = data.data[0].value;
+                    _this.duan_txt02 = data.data[1].value;
+                    _this.duan_txt03 = data.data[2].value;
+                    
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    }); 
+            },
+
+            
+        }
+
+    });
+
+</script>
+</body>
+
+</html>
+

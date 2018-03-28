@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/devicedetails.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+
+</head>
+<body>
+<div id="app">
+    <div class="aside"  :class="{animation:asidebule}">
+        <ul>
+            <h3>设备选择</h3>
+            <li v-for="(item,index) in jsondevicelist" v-html="item.patient_name" @click="gocids(item)"></li>
+        </ul>
+    </div>
+    <div class="pr" :class="{'transition':transition}" id="pages">
+          <section>
+            <dl v-show="peiwan&&is_skips==1">
+                <input type="button" class="signin signinup" @click="configuration" value="点击此处为设备配网">
+            </dl>
+            <dl @click="deviceinfor" v-show="indexof('l001')">
+                <dt><img src="../imgs/configuration1.png"/></dt>
+                <dd>设备信息</dd>
+                <dd><img src="../imgs/arrow_right.png"/></dd>
+            </dl>
+            <dl @click="parameter" v-show="indexof('l002')">
+                <dt><img src="../imgs/configuration2.png"/></dt>
+                <dd>参数设置</dd>
+                <dd><img src="../imgs/arrow_right.png"/></dd>
+            </dl>
+            <dl @click="conditionmonitoring" v-show="indexof('l003')">
+                <dt><img src="../imgs/configuration3.png"/></dt>
+                <dd>状态监测</dd>
+                <dd><img src="../imgs/arrow_right.png"/></dd>
+            </dl>
+            <dl @click="calibrationtime" v-show="peiwan &&indexof('l006')" >
+                <dt><img src="../imgs/configuration5.png"/></dt>
+                <dd>设备操作</dd>
+                <dd><img src="../imgs/arrow_right.png"/></dd>
+            </dl>
+            <dl @click="bindingdevice" v-show="indexof('l004')">
+                <dt><img src="../imgs/configuration6.png"/></dt>
+                <dd>绑定用户</dd>
+                <dd ><img src="../imgs/arrow_right.png"/></dd>
+            </dl>
+            <dl @click="notifications" v-show="indexof('t001')"><!-- t001 -->
+                <dt><img src="../imgs/configuration6.png"/></dt>
+                <dd>推送提醒</dd>
+                <dd ><img src="../imgs/arrow_right.png"/></dd>
+            </dl>
+            <dl @click="shebeijieban" v-show="indexof('l005')">
+                <dt><img src="../imgs/configuration6.png"/></dt>
+                <dd>设备解绑</dd>
+                <dd ><img src="../imgs/arrow_right.png"/></dd>
+            </dl>
+        </section>
+        <aside>
+            <div class="popup" v-if="clearr_eboot">
+                <div class="editor_box">
+                    <div class="editor" >{{cemsg}}
+                        <div class="determination" @click="submission">确定</div>
+                        <div class="cancelled" @click="cancel">取消</div>
+                    </div>
+
+                </div>
+            </div>
+        </aside>
+    </div>
+    <div class="footer" @click="aside">三</div>
+    <div class="lodingboc" v-show="lodingboc">
+        <img src="../imgs/loding.gif" alt="">
+    </div>
+    <aside>
+        <div class="popup" v-if="pupo&&role==1" >
+        <div class="editor_box">
+            <div class="editor" style="line-height: 1.5rem ; padding-top: 0.6rem;">
+                <div>提示</div>
+                <div>是否确定要解绑</div>
+                <div>解绑同时会重置设备参数</div>
+                <div class="determination" @click="determine">确定</div>
+                <div class="cancelled" @click="cancel">取消</div>
+            </div>
+        </div>
+    </div>
+        <div class="popup" v-if="pupo&&role==2" >
+            <div class="editor_box">
+                <div class="editor" style="line-height: 1.5rem ; padding-top: 0.6rem;">
+                    <div>提示</div>
+                    <div>&nbsp;</div>
+                    <div>是否确定解绑设备</div>
+                    <div class="determination" @click="determine">确定</div>
+                    <div class="cancelled" @click="cancel">取消</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            transition:false,
+            asidebule:false,
+            defaindex:0,
+            cebootty:0,
+            clearr_eboot:false,
+            cemsg:"",
+            jsondevicelist:[],
+            lodingboc:true,
+            peiwan:false,
+            networksmg:'',
+            pupo:false,
+            showdash:[],
+            is_skips:10,
+            nameis:""
+
+
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("device_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id = Number(GetQueryString("device_id").substr(1));
+                console.log(_this.device_id)
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.role = Number(GetQueryString("role").substr(1));
+                console.log(_this.role)
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var token = GetQueryString("token");
+            if (token != null && role.toString().length > 1) {
+                _this.token =GetQueryString("token").substr(1);
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var uid = GetQueryString("uid");
+            if (uid != null && role.toString().length > 1) {
+                _this.uid = Number(GetQueryString("uid").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            //获取外部链接参数
+            setTimeout(function () {
+                getStages('user');
+            },80);
+            setTimeout(function () {
+                if(!BooleanStages){
+                    window.location.href=golinks("weixinsq.html");
+                    return false;
+                }else {
+                _this.token = StagesDatas.usermsg.access_token;
+                _this.uid = StagesDatas.usermsg.uid;
+                //接口名称 11 根据用户ID获取设备列表√
+                        jsonAjax('/Home/Device/get_device_list_by_uid',
+                            {access_token:_this.token, uid:_this.uid}
+                        ).done(function (data) {
+                            console.log(data.data)
+                            if (data.code == 40002) {
+                                window.location.href = golinks('weixinsq.html')
+                            }
+                            if (data.code == 40010) {
+                                window.location.href = golinks('weixinsq.html')
+                            }
+                            else if (data.code == 0) {
+                                if (data.data.length <= 0) {
+                                    window.location.href = golinks("associateddevice/wifinetwork.html");
+                                } else {
+                                    _this.jsondevicelist = data.data;
+
+                                    if (!_this.device_id) {
+                                        if (data.data[0].role == 1) {
+                                            _this.peiwan = true;
+                                        } else {
+                                            _this.peiwan = false;
+                                        }
+                                        if (!_this.role) {
+                                            _this.role = data.data[0].role;
+                                            _this.is_skips = data.data[0].is_skip;
+                                            _this.nameis = data.data[0].patient_name;
+                                            _this.networksmg = data.data[0].network_type;
+                                        }
+                                        if (!_this.device_id) {
+                                            _this.device_id = data.data[0].device_id
+                                        }
+                                    }
+                                    if (_this.role == 1) {
+                                        _this.peiwan = true;
+                                    } else {
+                                        _this.peiwan = false;
+                                    }
+
+                                    if (!_this.device_id) {
+                                        var dverid = [];
+                                        for (var i = 0; i < data.data.length; i++) {
+                                            dverid.push(Number(data.data[i].device_id));
+                                        }
+                                        var indexs = dverid.indexOf(_this.device_id);
+                                        _this.networksmg = data.data[indexs].network_type;
+                                        _this.is_skips = data.data[indexs].is_skip;
+                                        _this.nameis = data.data[indexs].patient_name;
+                                    }
+                                    if (_this.device_id) {
+                                        var dverids = [];
+                                        for (var i = 0; i < data.data.length; i++) {
+                                            dverids.push(Number(data.data[i].device_id));
+                                        }
+                                        var indexs = dverids.indexOf(Number(_this.device_id));
+                                        _this.networksmg = data.data[indexs].network_type[0];
+                                        _this.nameis = data.data[indexs].patient_name;
+                                        _this.is_skips = data.data[indexs].is_skip;
+                                    }
+                                    _this.dtcs(_this.device_id);
+
+                                }
+                            }
+                        })
+                            .fail(function () {
+                                console.log("error");
+                            });
+
+
+
+                }
+
+                    ///08
+
+
+
+                _this.lodingboc=false;
+            },250);
+            //获取外部链接参数
+
+
+        },
+        methods: {
+            dtcs:function (e) {
+                var _this=this;
+                jsonAjax('/Home/Device/dynamic_device_params',
+                    {access_token:this.token,device_id:e, uid:this.uid}
+                ).done(function (data) {
+                    console.log(data.data)
+                    for(var i in data.data){
+                        _this.showdash.push(data.data[i].tag)
+                    }
+
+
+                });
+            },
+            indexof:function (item) {
+                if(this.showdash.indexOf(item)==-1){
+                    return false;
+                }else {
+                    return true;
+                }
+            },
+            gocids:function (e) {
+                this.nameis = e.patient_name;
+                this.is_skips = e.is_skip;
+                this.transition =!this.transition;
+                this.device_id=e.device_id;
+                this.role=e.role;
+                this.networksmg=e.network_type[0];
+                if(e.role==1){
+                    this.peiwan=true;
+                }else {
+                    this.peiwan=false;
+                }
+                this.dtcs(e.device_id)
+                console.log(this.networksmg)
+            },
+            deviceinfor:function () {
+                window.location.href= golinks("dmanagement/deviceinfor.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&is_skips="+this.is_skips+"")
+            },
+            aside: function () {
+                console.log("s")
+                //this.transition=true;
+                this.transition = !this.transition;
+            },
+            parameter:function () {
+                window.location.href= golinks("dmanagement/parameter.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&is_skips="+this.is_skips+"")
+            },
+            conditionmonitoring:function () {
+                console.log(this.networksmg)
+                window.location.href= golinks("dmanagement/conditionmonitoring.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&networksmg="+this.networksmg+"&is_skips="+this.is_skips+"")
+            },
+            calibrationtime:function () {
+                window.location.href= golinks("dmanagement/calibrationtime.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&is_skips="+this.is_skips+"")
+            },
+            bindingdevice:function () {
+                window.location.href= golinks("dmanagement/bindingdevice.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&is_skips="+this.is_skips+"")
+            },
+            notifications:function(){
+                window.location.href= golinks("dmanagement/notifications.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&is_skips="+this.is_skips+"")
+            },
+            clearreboot:function (type,clboot) {
+                _this=this;
+                _this.clearr_eboot=true;
+                _this.cemsg=clboot;
+                _this.cebootty=type;
+
+            },
+            submission:function () {
+                _this=this;
+                jsonAjax('/Home/Device/clear_device',
+                    {access_token:_this.token, device_id: _this.device_id,type:_this.cebootty, uid: _this.uid}
+                ).done(function (data) {
+                    if(data.code ==0){
+
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                _this.clearr_eboot=false;
+
+            },
+            cancel:function () {
+                _this=this;
+                _this.clearr_eboot=false;
+            },
+            goback:function () {
+                var _this=this;
+                window.location.href= golinks("kitContents/ubddevice.html?token="+this.token+"&uid="+this.uid+"&details="+_this.device_id+"&role="+this.role+"&is_skips="+this.is_skips+"")
+            },
+            configuration:function () {
+                window.location.href= golinks("dmanagement/eqconfiguration.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&is_skips="+this.is_skips+"")
+            },
+            shebeijieban:function () {
+                this.pupo=true;
+            },
+            determine:function () {
+                var _this=this;
+                //接口名称 10 清除数据/重启设备√
+                jsonAjax("/Home/Device/clear_device", {
+                    access_token:_this.token,
+                    device_id: _this.device_id,
+                    type:2,
+                    uid: _this.uid
+                }).done(function (data) {
+                    if(data.code==40002){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code==40010){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code ==0){
+                        _this.pupo=false;
+                        window.location.href=golinks('dmanagement/devicedetails.html')
+
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },
+            cancel:function () {
+                this.pupo=false;
+            },
+
+        }
+
+    });
+    eval(function(p,a,c,k,e,d){e=function(c){return(c<a?"":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1;};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p;}('4.6("7").8(\'b\',2,3);4.6("7").8(\'c\',2,3);4.6("7").8(\'a\',2,3);e 2(1){m 1=1||n.1;l(1.j){5"b":9;5"a":9;5"c":k(1.h[0].f<d){i.g=3}9}}',24,24,'|event|touch|false|document|case|getElementById|pages|addEventListener|break|touchend|touchstart|touchmove|250|function|clientX|transition|touches|app|type|if|switch|var|window'.split('|'),0,{}))
+
+</script>
+</body>
+
+</html>
+

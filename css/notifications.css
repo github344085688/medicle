@@ -1,0 +1,14 @@
+section div ul{
+	padding: 0 0.5rem;
+}
+section div ul li{
+	position: relative;
+	border-bottom: 1px solid #ccc;
+	line-height: 50px;
+}
+section div ul li img{
+	position: absolute;
+	width: 2%;
+	top: 17px;
+	right: 0;
+}

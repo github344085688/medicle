@@ -1,0 +1,137 @@
+/*万能清除浮动法*/
+.clearfix::after {
+	content: "";
+	display: block;
+	clear: both;
+	height: 0;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+section div ul{
+	padding: 0 0.5rem;
+}
+section div ul li{
+	width: 100%;
+}
+section div ul .yi{
+	position: relative;
+	border-bottom: 1px solid #ccc;
+	line-height: 50px;
+}
+section div ul .yi img{
+	position: absolute;
+	width: 2%;
+	top: 17px;
+	right: 0;
+}
+section div ul .er,
+section div ul .san,
+section div ul .wu{
+	border-bottom: 1px solid #ccc;
+	line-height: 50px;
+}
+section div ul .si,
+section div ul .liu{
+	padding:10px 0 0 0;
+	position: relative;
+}
+section div ul .si .si_t,
+section div ul .liu .liu_t{
+	width: 100%;
+	height: 80px;
+	font-size: 15px;
+	padding: 5px;
+	box-sizing: border-box;
+	resize:none;
+	overflow-y:scroll; 
+	outline:none;
+	box-shadow: 0px 1px 1px #000 inset;
+	margin:10px 0 0 0px;
+	box-sizing: border-box;
+}
+section div ul .si span,
+section div ul .liu span{
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+}
+section div .anniu{
+	margin-top: 50px;
+	width: 100%;
+	text-align: center;
+}
+section div .anniu .btn{
+	padding:10px 60px;
+	background: #00cc33;
+	border:0;
+	border-radius: 3px;
+	color: #fff;
+}
+
+
+
+.er .switch{position: relative;box-sizing: border-box;display:inline-block;width: 64px;height:24px;}
+.er .switch p{height: 30px;line-height: 30px;}
+.er .switch .s_one{position: absolute;width: 35px;height: 15px;border: 2px solid #ccc;border-radius: 20px;top: 0px;right: 0px;background: #ccc;}
+.er .switch .s_one span{display: block;position: absolute;width: 20px;height: 15px;border-radius: 20px;background: #fff;top: 0px;left: 0;}
+
+.wu .switch01{position: relative;box-sizing: border-box;display:inline-block;width: 64px;height:24px;}
+.wu .switch01 p{height: 30px;line-height: 30px;}
+.wu .switch01 .s_one01{position: absolute;width: 35px;height: 15px;border: 2px solid #ccc;border-radius: 20px;top: 0px;right: 0px;background: #ccc;}
+.wu .switch01 .s_one01 span{display: block;position: absolute;width: 20px;height: 15px;border-radius: 20px;background: #fff;top: 0px;left: 0;}
+
+.dizhi_t{
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	z-index: 2;
+	background: #fff;
+}
+.dizhi_t .dizhi_ul li{
+	line-height: 50px;
+	border-bottom: 1px solid #ccc;
+	position: relative;
+}
+.dizhi_t .dizhi_ul li input{
+	outline:none;
+	border:1px solid #Ccc;
+	padding: 0 5px;
+	height: 20px;
+	position: absolute;
+	top: 15px;
+	right: 0px;
+	box-shadow: 0px 1px 1px #000 inset;
+}
+.dizhi_t .btn02{
+	text-align: center;
+	margin-top: 50px;
+}
+.dizhi_t .btn02 button{
+	padding: 10px 60px;
+    background: #00cc33;
+    border: 0;
+    border-radius: 3px;
+    color: #fff;
+}
+.wei_tian{
+	position: fixed;
+	width: 150px;
+	text-align: center;
+	line-height: 40px;
+	background: #ccc;
+	color: #000;
+	border-radius: 3px;
+	bottom: 70px;
+	left: 50%;
+	margin-left: -75px;
+	z-index: 3;
+}
+
+.active{
+	pointer-events: none;
+}
+
+

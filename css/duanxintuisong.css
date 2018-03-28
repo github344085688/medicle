@@ -1,0 +1,238 @@
+/*万能清除浮动法*/
+.clearfix::after {
+	content: "";
+	display: block;
+	clear: both;
+	height: 0;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+section div ul{
+	padding: 0 0.5rem;
+}
+section div ul li{
+	position: relative;
+	width: 100%;
+	line-height: 50px;
+	border-bottom: 1px solid #ccc;
+}
+section div ul .yi，
+section div ul .si,
+section div ul .liu{
+	position: relative;
+}
+section div ul .yi img,
+section div ul .si img,
+section div ul .liu img{
+	position: absolute;
+	width: 2%;
+	top: 19px;
+	right: 0;
+}
+section div ul .si span,
+section div ul .liu span{
+	position: absolute;
+	top: 0;
+	right: 10px;
+}
+
+section div .anniu{
+	margin-top: 50px;
+	width: 100%;
+	text-align: center;
+}
+section div .anniu .btn{
+	padding:10px 60px;
+	background: #00cc33;
+	border:0;
+	border-radius: 3px;
+	color: #fff;
+}
+.active{
+	pointer-events: none;
+}
+
+
+.er .switch{position: relative;box-sizing: border-box;display:inline-block;width: 64px;height:24px;}
+.er .switch p{height: 30px;line-height: 30px;}
+.er .switch .s_one{position: absolute;width: 35px;height: 15px;border: 2px solid #ccc;border-radius: 20px;top: 0px;right: 0px;background: #ccc;}
+.er .switch .s_one span{display: block;position: absolute;width: 20px;height: 15px;border-radius: 20px;background: #fff;top: 0px;left: 0;}
+
+.wu .switch01{position: relative;box-sizing: border-box;display:inline-block;width: 64px;height:24px;}
+.wu .switch01 p{height: 30px;line-height: 30px;}
+.wu .switch01 .s_one01{position: absolute;width: 35px;height: 15px;border: 2px solid #ccc;border-radius: 20px;top: 0px;right: 0px;background: #ccc;}
+.wu .switch01 .s_one01 span{display: block;position: absolute;width: 20px;height: 15px;border-radius: 20px;background: #fff;top: 0px;left: 0;}
+
+.shouJH{
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	background: #fff;
+	z-index: 2;
+}
+
+.shouJH{
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	background: #fff;
+	top: 0;
+	left: 0;
+}
+.shouJH .chao_moban01{
+	padding: 0 10px;
+}
+.shouJH .chao_moban01 input{
+	-webkit-appearance: radio;
+}
+.shouJH .chao_moban01 .chao_moban0101 div,
+.shouJH .chao_moban01 .chao_moban0102 div,
+.shouJH .chao_moban01 .chao_moban0103 div{
+	width: 1%;
+	border:1px solid #ccc;
+	padding: 0 10px;
+	height: 80px;
+	display:table-cell;
+    vertical-align:middle;
+    border-radius: 10px;
+    box-shadow: 0px 0px 9px #333333;
+}
+.shouJH .chao_moban01 .chao_moban0101 div p,
+.shouJH .chao_moban01 .chao_moban0102 div p,
+.shouJH .chao_moban01 .chao_moban0103 div p{
+	margin-left:auto;    margin-right:auto;
+}
+
+.shouLF{
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	background: #fff;
+	top: 0;
+	left: 0;
+}
+.shouLF .lou_moban01{
+	padding: 0 10px;
+}
+.shouLF .lou_moban01 input{
+	-webkit-appearance: radio;
+}
+.shouLF .lou_moban01 .lou_moban0101 div,
+.shouLF .lou_moban01 .lou_moban0102 div,
+.shouLF .lou_moban01 .lou_moban0103 div{
+	width: 1%;
+	border:1px solid #ccc;
+	height: 80px;
+	display:table-cell;
+    vertical-align:middle; 
+    padding: 0 10px;
+	border-radius: 10px;
+	box-shadow: 0px 0px 9px #333333;
+}
+.shouLF .lou_moban01 .lou_moban0101 div p,
+.shouLF .lou_moban01 .lou_moban0102 div p,
+.shouLF .lou_moban01 .lou_moban0103 div p{
+	margin-left:auto;
+	margin-right:auto;
+}
+
+.shouJ_h{
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	background: #fff;
+	top: 0;
+	left: 0;
+}
+.shouJ_h ul{
+	padding: 0 10px;
+}
+.shouJ_h ul li{
+	font-size: 14px;
+	border-bottom:1px solid #ccc;
+	line-height: 50px;
+	color: #000;
+}
+.shouJ_h ul li .guo_ma{
+	width: 50px;
+	text-align: center;
+	line-height: 25px;
+	border: 1px solid #ccc;
+	margin:0 1.5rem 0 3rem;
+	box-shadow: 0px 1px 1px #000 inset;
+	outline:none;
+}
+/*.shouJ_h ul li span,
+.shouJ_h ul li input{
+	float: left;
+}*/
+.shouJ_h ul li span{
+	margin: 0 40px 0 10px;
+}
+.shouJ_h ul li .tel{
+	outline:none;
+	border: 1px solid #ccc;
+	/*height: 25px;*/
+	box-shadow: 0px 1px 1px #000 inset;
+	outline:none;
+	padding: 3px 10px;
+}
+.shouJ_h .shou_q{
+	text-align: center;
+	margin-top: 50px;
+}
+.shouJ_h .shou_q .duan_b{
+	padding: 10px 60px;
+    background: #00cc33;
+    border: 0;
+    border-radius: 3px;
+    color: #fff;
+}
+
+.wei_tian{
+	position: fixed;
+	width: 150px;
+	text-align: center;
+	line-height: 40px;
+	background: #ccc;
+	color: #000;
+	border-radius: 3px;
+	bottom: 70px;
+	left: 50%;
+	margin-left: -75px;
+	z-index: 3;
+}
+.active{
+	pointer-events: none;
+}
+
+
+
+
+@media screen and (max-device-width:768px) {
+    
+}
+
+@media screen and (max-device-width:414px) {
+    
+}
+
+@media screen and (max-device-width:375px) {
+    
+}
+
+@media screen and (max-device-width:360px) {
+    
+}
+
+@media screen and (max-device-width:320px) {
+    .shouJ_h ul li .guo_ma{
+    	margin: 0 1rem 0 1rem;	
+    }
+}

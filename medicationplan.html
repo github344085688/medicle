@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width,  initial-scale=1, minimum-scale=1, maximum-scale=1, minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="css/myequipment.css">
+    <script src="js/vue.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/fontzize.js"></script>
+    <script src="js/choice.js"></script>
+    <script src="js/jsonAjax.js"></script>
+    <link href="css/choice.min.css" rel="stylesheet" type="text/css"/>
+    <link href="css/medicationplan.css" rel="stylesheet" type="text/css"/>
+
+</head>
+<body>
+<div id="app">
+    <aside :class="{animation:asidebule}">
+        <ul>
+            <h3>设备选择</h3>
+            <li v-for="(item,index) in jsondevicelist" v-html="item.patient_name" @click="gocids(item)"></li>
+        </ul>
+    </aside>
+    <div class="pr" :class="{'transition':transition}" id="pages">
+        <input type="button" class="signin signinup" @click="addqppan" value="点击此处添加您的闹钟" v-show="role==1&&tole==1">
+        <section :class="{'botop':role!=1}">
+            <dl>
+                <dd>装药格数</dd>
+                <dd style="position: relative;">
+                    <div v-show="role!=1"
+                         style="height: 100%; width: 100%; position: absolute; top: 0; left: 0; background: #fff;">
+                        {{mockdata.ceil_used}}<img src="imgs/arrow_geuee.png" alt=""></div>
+                    <input id="boxmachine" type="button" :value="mockdata.ceil_used"/>
+                </dd>
+            </dl>
+            <dl @click="goyoiuxiaoq">
+                <dd>闹钟有效期</dd>
+                <dd class="prdl" v-if="mockdata.always_use==0">{{mockdata.start_date}}/{{mockdata.end_date}}<img
+                        src="imgs/arrow_geuee.png" alt="" v-if="role==1">
+                </dd>
+                <dd class="prdl" v-if="mockdata.always_use==1">长期有效<img src="imgs/arrow_geuee.png" alt="" v-if="role==1">
+                </dd>
+            </dl>
+            <div class="narticle" v-if="tishinaozhong">
+                <img src="imgs/nunnaozhong.png" alt="" class="nunimg">
+            </div>
+
+            <article class="artimt" v-for="(item ,index) in medication19.alarmclock" v-if="medication19.alarmclock[0]" @click="bianjinz(item)" :class="{article_bg:item.status=='0'}">
+                <div class="title" v-if="item.type==1">下一个闹钟</div>
+                <div class="times" v-html="item.alarm_time" v-if="item.status=='1'"></div>
+                <div class="times" v-if="item.status=='0'">--:--</div>
+             <!--   <div class="removebox" @click="removebox(item,index)" v-show="role==1">删除</div> @click="bianjinz(item)" v-show="role==1"-->
+                <div class="bjbox" v-show="role==1" :class="{article_clolr:item.status=='0'}">编辑</div>
+                <div class="ulbox" v-if="item.status=='1'|| medication19.alarmclock[index].drugs.length>0">
+                    <div class="container" :style="{width:(220*medication19.alarmclock[index].drugs.length)/750+'rem'}" @click="event.cancelBubble = true">
+                        <div class="wrapper" v-for="msg in item.drugs" :class="{'boxtree':item.drugs.length<4}">
+                            <div class="box">
+                                <div class="imgbox">
+                                    <img :src="msg.drug_imgurl" v-if="msg.drug_imgurl!=''" >
+                                </div>
+                                <div class="name" v-html="msg.drug_name"></div>
+                                <div class="nuber">数量 <span v-html="msg.drug_amount">2</span></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="ulbox" v-if="medication19.alarmclock[index].drugs.length<1">
+                    <div class="container"  @click="event.cancelBubble = true">
+                        <div class="wrapper boxtree">
+                            <div class="box">
+                                <div class="imgbox">
+                                </div>
+                                <div class="name" >药品名称</div>
+                                <div class="nuber">数量 </div>
+                            </div>
+
+                        </div>
+                        <div class="wrapper boxtree">
+                            <div class="box">
+                                <div class="imgbox">
+                                </div>
+                                <div class="name" >药品名称</div>
+                                <div class="nuber">数量 </div>
+                            </div>
+
+                        </div>
+                        <div class="wrapper boxtree">
+                        <div class="box">
+                            <div class="imgbox">
+                            </div>
+                            <div class="name" >药品名称</div>
+                            <div class="nuber">数量 </div>
+                        </div>
+
+                    </div>
+                    </div>
+                </div>
+                <div class="tishi"  v-if="item.remark==''">备注：暂无</div>
+                <div class="tishi"  v-if="item.status=='1'|| medication19.alarmclock[index].drugs.length>0">备注：{{item.remark}}</div>
+            </article>
+        </section>
+    </div>
+    <footer>
+        <nav @click="aside">三</nav>
+        <nav @click="jilu">记录</nav>
+        <nav>提醒</nav>
+        <nav @click="shebei">设备</nav>
+    </footer>
+    <div class="lodingboc" v-show="lodingboc">
+        <img src="imgs/loding.gif" alt="">
+    </div>
+
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            transition: false,
+            jsondevicelist: [],//智能硬件ID号列表
+            thisPlan_id: '',
+            is_automatic: null,
+            changtime: null,
+            asidebule: false,
+            medication19: {},
+            tishinaozhong: false,
+            mockdata: {
+                access_token: '',
+                always_use: 1,
+                ceil_used: '',
+                cid: '',
+                device_id: '',
+                end_date: '',
+                plan_id: 0,
+                start_date: '',
+                uid: ''
+            },
+            lodingboc: true,
+            role: 0,
+            tole:1,
+            nullnuber:true
+
+
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("devicid");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.pageid = Number(GetQueryString("devicid").substr(1));
+                _this.defaindex = Number(GetQueryString("devicid").substr(1));
+            }
+            else {
+                //window.location.href = golinks("");
+            }
+            var myurl = GetQueryString("cid");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.bcid = Number(GetQueryString("cid").substr(1));
+
+            }
+            else {
+                //window.location.href = golinks("");
+            }
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.role = Number(GetQueryString("role").substr(1));
+
+            }
+            else {
+                //window.location.href = golinks("");
+            }
+            setTimeout(function () {
+                getStages('user');
+            }, 120);
+            setTimeout(function () {
+                console.log(_this.pageid)
+                if (!BooleanStages) {
+                    window.location.href = golinks("weixinsq.html");
+                } else {
+                    _this.token = StagesDatas.usermsg.access_token;
+                    _this.uid = StagesDatas.usermsg.uid;
+                    //接口名称 11 根据用户ID获取设备列表√
+                    jsonAjax('/Home/Device/get_device_list_by_uid',
+                        {access_token: _this.token, uid: _this.uid}
+                    ).done(function (data) {
+                        if (data.code == 40002) {
+                            window.location.href = golinks('weixinsq.html')
+                        }
+                        if (data.code == 40010) {
+                            window.location.href = golinks('weixinsq.html')
+                        }
+                        else if (data.code == 0) {
+
+                            if (data.data.length <= 0) {
+                                window.location.href = golinks("associateddevice/wifinetwork.html");
+                            } else {
+                                _this.jsondevicelist = data.data;
+                                console.log(data.data)
+                                if (_this.pageid == undefined) {
+                                    _this.setdevice_id = data.data[0].device_id;
+                                    _this.bcid = data.data[0].cid;
+                                    _this.role = data.data[0].role;
+                                    _this.getMedi19(data.data[0].device_id);
+
+                                }
+                                else {
+                                    _this.getMedi19(_this.pageid);
+                                }
+                                _this.mockdata = {
+                                    access_token: _this.token,
+                                    always_use: 1,
+                                    ceil_used: 28,
+                                    cid: _this.bcid,
+                                    device_id: _this.setdevice_id,
+                                    end_date: '0000 00 00',
+                                    plan_id: '',
+                                    start_date: '0000 00 00',
+                                    uid: _this.uid,
+                                }
+
+                            }
+                            if ((_this.pageid == undefined)) {
+
+                            }
+                            else {
+
+                            }
+                        }
+                    })
+                        .fail(function () {
+                            console.log("error");
+                        });
+
+                }
+            }, 350);
+        },
+        methods: {
+            getMedi19: function (decid) {
+                var _this = this;
+                ////接口名称 19 获取设备的服药计划√
+                jsonAjax('/Home/device/get_device_plan_new',
+                    {access_token: _this.token, device_id: decid, plan_id: _this.thisPlan_id, uid: _this.uid}
+                ).done(function (data) {
+
+                    console.log(data);
+                    console.log(data);
+                    console.log(data);
+                    console.log(data);
+
+                    if (data.code == 40002) {
+                        window.location.href = golinks('weixinsq.html')
+                    }
+                    if (data.code == 40010) {
+                        window.location.href = golinks('weixinsq.html')
+                    }
+                    //全局改变状态
+                    if (data.code == 0) {
+                        if (data.data.alarmclock[0] == undefined) {
+                            _this.tishinaozhong = true
+                        } else {
+                            _this.tishinaozhong = false
+                        }
+                        _this.medication19 = data.data;
+                        var alararry = []
+                        for (var i = 0; i < data.data.alarmclock.length; i++) {
+                            alararry.push(Number(data.data.alarmclock[i].type))
+                        }
+                        var index = alararry.indexOf(1);
+                        var alarmock = data.data.alarmclock[index];
+                        //_this.medication19.alarmclock.splice(index, 1);
+                        //_this.medication19.alarmclock.unshift(alarmock);
+                        _this.mockdata.always_use = data.data.always_use;
+                        _this.mockdata.ceil_used = data.data.ceil_used;
+                        _this.mockdata.cid = data.data.cid;
+                        _this.mockdata.device_id = data.data.device_id;
+                        _this.mockdata.end_date = data.data.end_date;
+                        _this.mockdata.plan_id = data.data.plan_id;
+                        _this.mockdata.start_date = data.data.start_date;
+                        if (_this.mockdata.always_use == 1) {
+                            _this.changtime = 1;
+                        } else {
+                            _this.changtime = 0;
+                        }
+                        if(data.data.alarmclock.length>=6){
+                            _this.tole=0;
+                        }
+                    } else {
+                    }
+                    _this.lodingboc = false;
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+
+            },
+
+
+            aside: function () {
+                console.log("s")
+                this.transition = !this.transition;
+            },
+            jilu: function () {
+                window.location.href = golinks("endar.html");
+                window.location.href = golinks("endar.html?details=" + this.pageid + "&role=" + this.role + "");
+            },
+            shebei: function () {
+                window.location.href = golinks("kitContents/ubddevice.html?details=" + this.pageid + "&role=" + this.role + "");
+            },
+            gocids: function (e) {
+
+                this.role = Number(e.role);
+                this.transition = !this.transition;
+                this.getMedi19(e.device_id, e.cid);
+                this.bcid = e.cid;
+                this.pageid = e.device_id;
+            },
+            addqppan: function () {
+                window.location.href = golinks("settingmedication.html?plan_id=" + this.mockdata.plan_id + "&cid=" + this.mockdata.cid + "&device_id=" + this.mockdata.device_id + "&alarm_id=0&role=" + this.role + " &token="+this.token+"&uid="+this.uid+"");
+            },
+            bianjinz: function (item) {
+                if(this.role==1){
+                    window.location.href = golinks("settingmedication.html?plan_id=" + this.mockdata.plan_id + "&cid=" + this.mockdata.cid + "&device_id=" + this.mockdata.device_id + "&alarm_id=" + item.alarm_id + "&alarm_time=" + item.alarm_time + "&role=" + this.role + "&token="+this.token+"&uid="+this.uid+"&row="+item.row+"");
+                }else {
+                    return false;
+                }
+
+
+            },
+            goyoiuxiaoq: function () {
+                if (this.role == 1) {
+                    window.location.href = golinks("Termofvalidity.html?device_id=" + this.mockdata.device_id + "&role=" + this.role + "&plan_id=" + this.mockdata.plan_id + "&token="+this.token+"&uid="+this.uid+"");
+                }
+
+            },
+            removebox: function (item, index) {
+                var _this = this;
+                //接口名称 27 编辑设备服药计划的闹钟设置（api-version：1.1）
+                jsonAjax('/Home/Device/modify_device_alarmclock_new', JSON.stringify({
+                        access_token: _this.mockdata.access_token,
+                        alarm_id: item.alarm_id,
+                        alarm_time: item.alarm_time,
+                        cid: _this.mockdata.cid,
+                        device_id: _this.mockdata.device_id,
+                        drugs: item.drugs,
+                        plan_id: _this.mockdata.plan_id,
+                        remark: item.remark,
+                        status: '0',
+                        uid: _this.mockdata.uid,
+                    })
+                ).done(function (data) {
+                    if (data.code == 0) {
+                        _this.medication19.alarmclock.splice(index, 1);
+                        console.log(_this.medication19.alarmclock.length)
+                        if(_this.medication19.alarmclock.length>=6){
+                            _this.tole=0;
+                        }else {
+                            _this.tole=1;
+                        }
+                        if (_this.medication19.alarmclock.length == 0) {
+                            _this.tishinaozhong = true;
+                        }
+
+                    }
+                    //app.mockdata.plan_id=data.data.plan_id;
+                    console.log(data)
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            }
+
+        }
+
+    });
+    //选择智能硬件ID
+    $('#boxmachine').choice().number({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        minWidth: 200,
+        layout: 'fixed',
+        step: 1,
+        min: 1,
+        max: 28,
+        onSet: function (event, inst) {
+            app.mockdata.ceil_used = inst._wheelArray[0];
+            //接口名称 26 编辑服药计划（api-version：1.1）
+            console.log(inst._wheelArray[0])
+            console.log(app.mockdata.cid)
+            console.log(app.mockdata.device_id)
+            console.log(app.mockdata.plan_id)
+            console.log(app.mockdata.uid)
+            jsonAjax('/Home/Device/modify_device_plan',
+                {
+                    access_token: app.mockdata.access_token,
+                    always_use: 1,
+                    ceil_used: app.mockdata.ceil_used,
+                    cid: app.mockdata.cid,
+                    device_id: app.mockdata.device_id,
+                    end_date: '',
+                    plan_id: app.mockdata.plan_id,
+                    start_date: '',
+                    uid: app.mockdata.uid,
+                }
+            ).done(function (data) {
+                app.mockdata.plan_id = data.data.plan_id;
+                console.log(data)
+            })
+                .fail(function () {
+                    console.log("error");
+                });
+
+        }
+
+    });
+    eval(function (p, a, c, k, e, d) {
+        e = function (c) {
+            return (c < a ? "" : e(parseInt(c / a))) + ((c = c % a) > 35 ? String.fromCharCode(c + 29) : c.toString(36))
+        };
+        if (!''.replace(/^/, String)) {
+            while (c--)d[e(c)] = k[c] || e(c);
+            k = [function (e) {
+                return d[e]
+            }];
+            e = function () {
+                return '\\w+'
+            };
+            c = 1;
+        }
+        ;
+        while (c--)if (k[c]) p = p.replace(new RegExp('\\b' + e(c) + '\\b', 'g'), k[c]);
+        return p;
+    }('4.6("7").8(\'b\',2,3);4.6("7").8(\'c\',2,3);4.6("7").8(\'a\',2,3);e 2(1){m 1=1||n.1;l(1.j){5"b":9;5"a":9;5"c":k(1.h[0].f<d){i.g=3}9}}', 24, 24, '|event|touch|false|document|case|getElementById|pages|addEventListener|break|touchend|touchstart|touchmove|250|function|clientX|transition|touches|app|type|if|switch|var|window'.split('|'), 0, {}))
+</script>
+</body>
+</html>

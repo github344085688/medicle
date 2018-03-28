@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/notifications.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+    <style>
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav @click="goback"><img src="../imgs/arrow_left.png"></nav>
+        <nav>推送提醒</nav>
+        <nav></nav>
+    </header>
+    <section>
+        <div>
+            <ul>
+                <li style="display: none;">应用推送提醒<img src="../imgs/arrow_right.png"/></li>
+                <li @click="duanxintuisong">短信推送提醒<img src="../imgs/arrow_right.png"/></li>
+                <li @click="youjiantuisong">邮件推送提醒<img src="../imgs/arrow_right.png"/></li>
+            </ul>
+        </div>
+    </section>
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+
+        },
+        mounted: function () {
+            var _this = this;
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+            var myurl = GetQueryString("device_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id =Number(GetQueryString("device_id").substr(1));
+            }
+            else {
+                //window.location.href = "http://192.168.0.138";
+            }
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.role = Number(GetQueryString("role").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var token = GetQueryString("token");
+            if (token != null && role.toString().length > 1) {
+                _this.token =GetQueryString("token").substr(1);
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var uid = GetQueryString("uid");
+            if (uid != null && role.toString().length > 1) {
+                _this.uid = Number(GetQueryString("uid").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            //获取外部链接参数
+
+                jsonAjax('/Home/Device/get_device_bundle_list',
+                    {access_token:_this.token, device_id: _this.device_id, uid: _this.uid}
+                ).done(function (data) {
+                    if(data.code==40002){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code==40010){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code ==0){
+                        console.log(data)
+                        _this.msg=data.data;
+                        if(_this.role==1){
+                            for(var i=0;i<_this.msg.length;i++){
+                                _this.$set(_this.msg[i],'jieban',false);
+                            }
+                        }else  if(_this.role==2){
+                            for(var i=0;i<_this.msg.length;i++){
+                                if(_this.msg[i].role==1||_this.msg[i].uid!=_this.uid){
+                                    _this.$set(_this.msg[i],'jieban',false);
+                                }else {
+                                        _this.$set(_this.msg[i],'jieban',true);
+                                }
+                            }
+                        }
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+        },
+        methods: {
+            goback:function () {
+                var _this=this;
+                window.location.href=golinks("dmanagement/devicedetails.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&off=1")
+            },
+            youjiantuisong:function () {
+                var _this=this;
+                window.location.href=golinks("dmanagement/youjiantuisong/youjiantuisong.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&off=1")
+            },
+            duanxintuisong:function () {
+                var _this=this;
+                window.location.href=golinks("dmanagement/duanxintuisong/duanxintuisong.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&off=1")
+            },
+
+        }
+
+    });
+
+</script>
+</body>
+
+</html>
+

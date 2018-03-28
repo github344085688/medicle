@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jsonAjax.js"></script>
+
+</head>
+<body>
+<script type="text/javascript">
+    (function () {
+        setTimeout(function(){
+            getStages('weixin');
+        },90);
+        setTimeout(function(){
+            console.log(StagesDatas)
+            if(!BooleanStages){
+                window.location.href=golinks("oauth.php");
+            }else {
+                 //接口名称 06 微信授权登录√
+                 jsonAjax("/Home/User/api_login_wechat",
+                     {
+                     city:StagesDatas.usermsg.city,
+                     country:StagesDatas.usermsg.country,
+                     headimgurl:StagesDatas.usermsg.headimgurl,
+                     nickname:StagesDatas.usermsg.nickname,
+                     openid:StagesDatas.usermsg.openid,
+                     province:StagesDatas.usermsg.province,
+                     sex:StagesDatas.usermsg.sex,
+                     unionid:StagesDatas.usermsg.unionid,
+                     }
+                 ).done(function (data) {
+                     console.log(data)
+                     if(data.data.uid==0){
+                         window.location.href="lodings/index.html"
+                     }if(data.data.uid!=0){
+                         var usermsg=[{
+                             keyname:"user",
+                             usermsg:data.data
+                         }];
+                         setstages(usermsg);
+                         setTimeout(function(){
+                             window.location.href="medicationplan.html"
+                         },150)
+
+                     }
+
+                 })
+            }
+        },200);
+
+    })();
+</script>
+</body>
+
+</html>
+

@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <script src="../js/jquery.min.js"></script>    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/choice.js"></script>
+    <link href="../css/choice.min.css" rel="stylesheet" type="text/css"/>
+    <script src="../js/jsonAjax.js"></script>
+    <style type="text/css">
+        a{text-decoration: none;}
+        ul, ol, li{list-style: none;padding: 0;margin: 0;}
+        #calendar{width: 94%; border-radius: 8px; margin-top: 15px; margin-left: auto; margin-right: auto;  height:270px!important; overflow;-moz-box-shadow: 0px 3px 0px rgba(0,0,0,0.2);-webkit-box-shadow: 0px 3px 8px rgba(0,0,0,0.2);box-shadow: 0px 3px 8px rgba(0,0,0,0.2)}
+        p{margin: 0;}
+        body{ padding-top: 0;}
+        section{ width: 78%; margin-left: auto; margin-right: auto; margin-top: 25%;}
+        section .logo{ width: 50%; height: auto;}
+        section .logo img{ width: 100%; height: auto;}
+        section dl{width: 100%; height:2.2rem; display: flex; margin-top: 1.5rem;}
+        section dt{flex: 2;}
+        section dt input{width: 80%; text-align: center;box-sizing: border-box; height: 100%; border: #cacaca 1px solid; border-radius: 10px;cursor: none;outline: none;}
+        section dd{flex:8;}
+        section .yzd{flex:3.5; box-sizing: border-box; padding-left: 1rem;}
+        section .yzd input{width: 100%; padding-left:0; text-align: center; box-sizing: border-box; height: 100%; border: #cacaca 1px solid; border-radius: 10px; cursor: none;outline: none;}
+        section dd input{width: 100%; padding-left: 1.5rem; box-sizing: border-box; height: 100%; border: #cacaca 1px solid; border-radius: 10px; cursor: none;outline: none;}
+        section dd span{ font-size: 0.85rem; color: #00cc33;display: block}
+        section dd:nth-of-type(2) span{text-align: right; display: block}
+        section .signin{margin-top: 3rem;box-shadow: 0px 6px 6px rgba(3, 143, 16, 0.49); height: 2rem; background: #00cc33;border-radius: 1rem;color: #fff; line-height: 2rem; text-align: center; width:80%; margin-right: auto; margin-left: auto; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <section>
+        <div class="logo"><img src="../imgs/logo.png"/>
+        </div>
+
+        <dl>
+            <dt><input id="changCity" v-model="countryCode" /></dt>
+            <dd><input type="text" placeholder="请输入手机或邮箱" v-model="username"></dd>
+        </dl>
+        <dl>
+            <dd><input type="text" placeholder="请验证码" v-model="Code"></dd>
+            <dd class="yzd"><input type="button" value="获取验证码"></dd>
+        </dl>
+        <dl>
+            <dd><input type="password" placeholder="请输6-20位密码" v-model="password"></dd>
+        </dl>
+        <dl>
+            <dd><span>注册</span></dd>
+            <dd><span class="span">忘记密码</span></dd>
+        </dl>
+        <div class="signin" @click="Submit">登录</div>
+        <div class="popuparticle" v-html="tishi" v-if="tishidisa"></div>
+    </section>
+</div>
+
+
+<script>
+    var myreg = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            changCity: [
+                {
+                    "country": "阿尔巴尼亚",
+                    "code": "355"
+                },
+                {
+                    "country": "阿尔及利亚",
+                    "code": "213"
+                },
+                {
+                    "country": "安道尔",
+                    "code": "33628"
+                },
+                {
+                    "country": "安哥拉",
+                    "code": "224"
+                },
+                {
+                    "country": "阿根廷",
+                    "code": "54"
+                },
+                {
+                    "country": "澳大利亚",
+                    "code": "61"
+                },
+                {
+                    "country": "奥地利",
+                    "code": "43"
+                },
+                {
+                    "country": "巴哈马",
+                    "code": "1809"
+                },
+                {
+                    "country": "巴林",
+                    "code": "973"
+                },
+                {
+                    "country": "孟加拉国",
+                    "code": "880"
+                },
+                {
+                    "country": "巴巴多斯",
+                    "code": "1809"
+                },
+                {
+                    "country": "巴西",
+                    "code": "55"
+                },
+                {
+                    "country": "比利时",
+                    "code": "32"
+                },
+                {
+                    "country": "伯利兹",
+                    "code": "501"
+                },
+                {
+                    "country": "贝宁",
+                    "code": "229"
+                },
+                {
+                    "country": "百幕大",
+                    "code": "1809"
+                },
+                {
+                    "country": "不丹",
+                    "code": "975"
+                },
+                {
+                    "country": "波利维亚",
+                    "code": "591"
+                },
+                {
+                    "country": "博茨瓦纳",
+                    "code": "267"
+                },
+                {
+                    "country": "文莱",
+                    "code": "673"
+                },
+                {
+                    "country": "保加利亚",
+                    "code": "359"
+                },
+                {
+                    "country": "缅甸",
+                    "code": "95"
+                },
+                {
+                    "country": "布隆迪",
+                    "code": "257"
+                },
+                {
+                    "country": "喀麦隆",
+                    "code": "237"
+                },
+                {
+                    "country": "加拿大",
+                    "code": "1"
+                },
+                {
+                    "country": "加那利群岛",
+                    "code": "34"
+                },
+                {
+                    "country": "佛得角",
+                    "code": "238"
+                },
+                {
+                    "country": "开曼群岛",
+                    "code": "1809"
+                },
+                {
+                    "country": "中非共和国",
+                    "code": "236"
+                },
+                {
+                    "country": "乍得",
+                    "code": "235"
+                },
+                {
+                    "country": "智利",
+                    "code": "56"
+                },
+                {
+                    "country": "中国",
+                    "code": "86"
+                },
+                {
+                    "country": "哥伦比亚",
+                    "code": "57"
+                },
+                {
+                    "country": "刚果",
+                    "code": "242"
+                },
+                {
+                    "country": "哥斯达黎加",
+                    "code": "506"
+                },
+                {
+                    "country": "古巴",
+                    "code": "53"
+                },
+                {
+                    "country": "塞浦路斯",
+                    "code": "357"
+                },
+                {
+                    "country": "捷克斯洛伐克",
+                    "code": "42"
+                },
+                {
+                    "country": "丹麦",
+                    "code": "45"
+                },
+                {
+                    "country": "吉布提",
+                    "code": "253"
+                },
+                {
+                    "country": "多米尼加国",
+                    "code": "1809"
+                },
+                {
+                    "country": "东萨摩亚",
+                    "code": "685"
+                },
+                {
+                    "country": "厄瓜多尔",
+                    "code": "593"
+                },
+                {
+                    "country": "埃及",
+                    "code": "20"
+                },
+                {
+                    "country": "萨尔瓦多",
+                    "code": "503"
+                },
+                {
+                    "country": "英国",
+                    "code": "44"
+                },
+                {
+                    "country": "赤道几内亚",
+                    "code": "240"
+                },
+                {
+                    "country": "埃塞俄比亚",
+                    "code": "251"
+                },
+                {
+                    "country": "福克兰群岛",
+                    "code": "306"
+                },
+                {
+                    "country": "斐济",
+                    "code": "679"
+                },
+                {
+                    "country": "芬兰",
+                    "code": "358"
+                },
+                {
+                    "country": "法国",
+                    "code": "33"
+                },
+                {
+                    "country": "法属波里尼西亚",
+                    "code": "689"
+                },
+                {
+                    "country": "加蓬",
+                    "code": "241"
+                },
+                {
+                    "country": "冈比亚",
+                    "code": "220"
+                },
+                {
+                    "country": "德国",
+                    "code": "49"
+                },
+                {
+                    "country": "加纳",
+                    "code": "233"
+                },
+                {
+                    "country": "希腊",
+                    "code": "30"
+                },
+                {
+                    "country": "格林纳达",
+                    "code": "1809"
+                },
+                {
+                    "country": "关岛",
+                    "code": "671"
+                },
+                {
+                    "country": "圭亚那",
+                    "code": "592"
+                },
+                {
+                    "country": "海地",
+                    "code": "509"
+                },
+                {
+                    "country": "洪都拉斯",
+                    "code": "504"
+                },
+                {
+                    "country": "香港",
+                    "code": "852"
+                },
+                {
+                    "country": "匈牙利",
+                    "code": "36"
+                },
+                {
+                    "country": "冰岛",
+                    "code": "354"
+                },
+                {
+                    "country": "印度",
+                    "code": "91"
+                },
+                {
+                    "country": "印度尼西亚",
+                    "code": "62"
+                },
+                {
+                    "country": "伊朗",
+                    "code": "98"
+                },
+                {
+                    "country": "伊拉克",
+                    "code": "964"
+                },
+                {
+                    "country": "爱尔兰",
+                    "code": "353"
+                },
+                {
+                    "country": "以色列",
+                    "code": "972"
+                },
+                {
+                    "country": "意大利",
+                    "code": "39"
+                },
+                {
+                    "country": "牙买加",
+                    "code": "1809"
+                },
+                {
+                    "country": "日本",
+                    "code": "81"
+                },
+                {
+                    "country": "约旦",
+                    "code": "962"
+                },
+                {
+                    "country": "几内亚",
+                    "code": "224"
+                },
+                {
+                    "country": "柬埔寨",
+                    "code": "855"
+                },
+                {
+                    "country": "肯尼亚",
+                    "code": "254"
+                },
+                {
+                    "country": "朝鲜民主主义人民共和国",
+                    "code": "850"
+                },
+                {
+                    "country": "韩国",
+                    "code": "82"
+                },
+                {
+                    "country": "科威特",
+                    "code": "965"
+                },
+                {
+                    "country": "老挝",
+                    "code": "856"
+                },
+                {
+                    "country": "黎巴嫩",
+                    "code": "961"
+                },
+                {
+                    "country": "莱索托",
+                    "code": "266"
+                },
+                {
+                    "country": "利比里亚",
+                    "code": "231"
+                },
+                {
+                    "country": "利比亚",
+                    "code": "218"
+                },
+                {
+                    "country": "列支敦士登",
+                    "code": "41"
+                },
+                {
+                    "country": "卢森堡",
+                    "code": "352"
+                },
+                {
+                    "country": "马达加斯加",
+                    "code": "261"
+                },
+                {
+                    "country": "马拉维",
+                    "code": "265"
+                },
+                {
+                    "country": "马来西亚",
+                    "code": "60"
+                },
+                {
+                    "country": "马尔代夫",
+                    "code": "960"
+                },
+                {
+                    "country": "马里",
+                    "code": "223"
+                },
+                {
+                    "country": "马耳他",
+                    "code": "356"
+                },
+                {
+                    "country": "马里亚纳群岛",
+                    "code": "670"
+                },
+                {
+                    "country": "马提尼克(法)",
+                    "code": "596"
+                },
+                {
+                    "country": "毛里塔尼亚",
+                    "code": "222"
+                },
+                {
+                    "country": "毛里求斯",
+                    "code": "230"
+                },
+                {
+                    "country": "墨西哥",
+                    "code": "52"
+                },
+                {
+                    "country": "摩纳哥",
+                    "code": "3393"
+                },
+                {
+                    "country": "蒙特塞拉特岛(英)",
+                    "code": "1809"
+                },
+                {
+                    "country": "摩洛哥",
+                    "code": "212"
+                },
+                {
+                    "country": "莫桑比克",
+                    "code": "258"
+                },
+                {
+                    "country": "纳米比亚",
+                    "code": "264"
+                },
+                {
+                    "country": "瑙鲁",
+                    "code": "674"
+                },
+                {
+                    "country": "尼伯尔",
+                    "code": "977"
+                },
+                {
+                    "country": "新喀里多尼亚",
+                    "code": "687"
+                },
+                {
+                    "country": "新西兰",
+                    "code": "64"
+                },
+                {
+                    "country": "尼加拉瓜",
+                    "code": "505"
+                },
+                {
+                    "country": "尼日尔",
+                    "code": "227"
+                },
+                {
+                    "country": "尼日利亚",
+                    "code": "234"
+                },
+                {
+                    "country": "纽埃岛",
+                    "code": "683"
+                },
+                {
+                    "country": "诺福克岛",
+                    "code": "6723"
+                },
+                {
+                    "country": "挪威",
+                    "code": "47"
+                },
+                {
+                    "country": "荷兰",
+                    "code": "31"
+                },
+                {
+                    "country": "阿曼",
+                    "code": "968"
+                },
+                {
+                    "country": "巴基斯坦",
+                    "code": "92"
+                },
+                {
+                    "country": "巴拿马",
+                    "code": "507"
+                },
+                {
+                    "country": "巴布亚新几内亚",
+                    "code": "675"
+                },
+                {
+                    "country": "巴拉圭",
+                    "code": "595"
+                },
+                {
+                    "country": "秘鲁",
+                    "code": "51"
+                },
+                {
+                    "country": "波多黎各",
+                    "code": "1809"
+                },
+                {
+                    "country": "菲律宾",
+                    "code": "63"
+                },
+                {
+                    "country": "波兰",
+                    "code": "48"
+                },
+                {
+                    "country": "葡萄牙",
+                    "code": "351"
+                },
+                {
+                    "country": "卡塔尔",
+                    "code": "974"
+                },
+                {
+                    "country": "留尼旺岛(法)",
+                    "code": "262"
+                },
+                {
+                    "country": "罗马尼亚",
+                    "code": "40"
+                },
+                {
+                    "country": "卢旺达",
+                    "code": "250"
+                },
+                {
+                    "country": "圣马力诺",
+                    "code": "39549"
+                },
+                {
+                    "country": "圣多美及普林西比",
+                    "code": "239"
+                },
+                {
+                    "country": "沙特阿拉伯",
+                    "code": "966"
+                },
+                {
+                    "country": "塞内加尔",
+                    "code": "221"
+                },
+                {
+                    "country": "塞舌尔",
+                    "code": "248"
+                },
+                {
+                    "country": "塞拉利昂",
+                    "code": "232"
+                },
+                {
+                    "country": "新加坡",
+                    "code": "65"
+                },
+                {
+                    "country": "所罗门群岛",
+                    "code": "677"
+                },
+                {
+                    "country": "索马里",
+                    "code": "252"
+                },
+                {
+                    "country": "南非",
+                    "code": "27"
+                },
+                {
+                    "country": "西班牙",
+                    "code": "34"
+                },
+                {
+                    "country": "斯里兰卡",
+                    "code": "94"
+                },
+                {
+                    "country": "圣克里斯托弗和尼维斯",
+                    "code": "1809"
+                },
+                {
+                    "country": "圣卢西亚",
+                    "code": "1809"
+                },
+                {
+                    "country": "圣文森特岛",
+                    "code": "1809"
+                },
+                {
+                    "country": "苏丹",
+                    "code": "249"
+                },
+                {
+                    "country": "苏里南",
+                    "code": "597"
+                },
+                {
+                    "country": "斯威士兰",
+                    "code": "268"
+                },
+                {
+                    "country": "瑞典",
+                    "code": "46"
+                },
+                {
+                    "country": "瑞士",
+                    "code": "41"
+                },
+                {
+                    "country": "叙利亚",
+                    "code": "963"
+                },
+                {
+                    "country": "台湾",
+                    "code": "886"
+                },
+                {
+                    "country": "坦桑尼亚",
+                    "code": "255"
+                },
+                {
+                    "country": "泰国",
+                    "code": "66"
+                },
+                {
+                    "country": "多哥",
+                    "code": "228"
+                },
+                {
+                    "country": "汤加",
+                    "code": "676"
+                },
+                {
+                    "country": "特立尼达和多巴哥",
+                    "code": "1809"
+                },
+                {
+                    "country": "突尼斯",
+                    "code": "216"
+                },
+                {
+                    "country": "土耳其",
+                    "code": "90"
+                },
+                {
+                    "country": "特克斯和凯科斯群岛(英)",
+                    "code": "1809"
+                },
+                {
+                    "country": "科摩罗",
+                    "code": "269"
+                },
+                {
+                    "country": "科克群岛(新)",
+                    "code": "682"
+                },
+                {
+                    "country": "阿拉伯联合酋长国",
+                    "code": "971"
+                },
+                {
+                    "country": "乌干达",
+                    "code": "256"
+                },
+                {
+                    "country": "美国",
+                    "code": "1"
+                },
+                {
+                    "country": "乌拉圭",
+                    "code": "598"
+                },
+                {
+                    "country": "委内瑞拉",
+                    "code": "58"
+                },
+                {
+                    "country": "越南",
+                    "code": "84"
+                },
+                {
+                    "country": "也门",
+                    "code": "969"
+                },
+                {
+                    "country": "南斯拉夫",
+                    "code": "38"
+                },
+                {
+                    "country": "扎伊尔",
+                    "code": "243"
+                },
+                {
+                    "country": "赞比亚",
+                    "code": "260"
+                },
+                {
+                    "country": "津巴布韦",
+                    "code": "263"
+                }],
+            countryCode: '86',
+            Code:'',
+            username: '',
+            password: '',
+            type:0
+
+        },
+        mounted: function () {
+            var _this = this;
+            window.localStorage.setItem('language','zh-cn');
+        },
+        watch: {
+                username: function (val, oldVal) {
+                    if (myreg.test(val)) {
+                        this.type=2
+                    }else {
+                        this.type=3
+                    }
+
+            }
+        },
+        methods: {
+            Submit: function () {
+                var _this = this;
+                //03 手机号/邮箱登录√
+                jsonAjax("/Home/User/api_login",
+                    {
+                        country_code: _this.countryCode,
+                        password: _this.password,
+                        token: 's',
+                        type: _this.type,
+                        username: _this.username
+                    }
+                ).done(function (data) {
+                    if (data.code ==0) {
+                        window.localStorage.setItem('token',data.data.access_token);
+                        window.localStorage.setItem('uid',data.data.uid);
+                        window.localStorage.setItem('password',_this.password);
+                        window.localStorage.setItem('password',_this.username);
+                        _this.asynchronous(data.data.access_token,data.data.uid);
+                    }
+                    console.log(data);
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },
+            asynchronous:function (token,uid) {
+                var _this = this;
+                //11 根据用户ID获取设备列表√
+                jsonAjax("/Home/Device/get_device_list_by_uid/Home/User/api_login",
+                    {
+                        access_token: token,
+                        uid: uid
+                    }
+                ).done(function (data) {
+                    if (data.msg == "获取数据失败") {
+                        if(data.data.length==0){
+                            window.location.href=golinks("associateddevice/wifinetwork.html");
+                        } else {
+
+                        }
+                    }else if(data.code ==0) {
+                        window.localStorage.setItem('device_ids',  JSON.stringify(data.data));
+                        window.localStorage.setItem('device_id', data.data[0].device_id);
+                        window.localStorage.setItem('device_ids',  JSON.stringify(data.data));
+                        window.location.href =golinks("myequipment.html");
+                    }
+                    console.log(data);
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            },
+            goback: function () {
+                var _this = this;
+
+            }
+        }
+
+    });
+
+    var datacity = [];
+    $('#changCity').choice().scroller({
+        theme: 'ios',
+        display: 'bottom',
+        lang: 'zh',
+        onInit: function (event, inst) {
+            for (var i = 0; i < app.changCity.length; i++) {
+                datacity.push('-' + app.changCity[i].code + '-' + app.changCity[i].country)
+            }
+        },
+        wheels: [
+            [{
+                data: datacity
+            }]
+        ],
+        onSet: function (event, inst) {
+            app.countryCode = inst._value.replace(/[^0-9]/ig, "");
+            console.log(app.countryCode)
+        }
+    });
+
+</script>
+</body>
+</html>

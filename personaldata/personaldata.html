@@ -1,0 +1,1485 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <script src="../js/jsonAjax.js"></script>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/personaldata.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/choice.js"></script>
+    <link rel="stylesheet" href="../css/citinsstyle.css"/>
+    <link href="../css/choice.min.css" rel="stylesheet" type="text/css"/>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <style>
+    </style>
+
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav></nav>
+        <nav>个人资料</nav>
+        <nav></nav>
+    </header>
+    <div class="portrait">
+        <div>
+            <div class="box" @click="gailimgfn" ><img :src="gailimg"></div>
+        </div>
+        <div>
+            <div class="boxper" ><input type="button" onclick="take_a_photo()" ><img :src="datas.headimgurl" v-if="datas.headimgurl!=''">
+            </div>
+        </div>
+        <div>
+            <div class="box" @click="manlimgfn" ><img :src="manlimg"></div>
+        </div>
+    </div>
+    <section>
+        <dl>
+            <dd>姓名</dd>
+            <dd @click="deviceinfor(datas.nickname)" v-html="defauleusername" class="imgbg"> </dd>
+        </dl>
+        <dl>
+            <dd>手机号</dd>
+            <dd @click="telparameter" v-html="datas.mobile" class="imgbg"></dd>
+        </dl>
+        <dl>
+            <dd>邮箱</dd>
+            <dd @click="emallparameter" v-html="datas.email" class="imgbg"></dd>
+        </dl>
+
+        <dl>
+            <dd>出生年月</dd>
+            <dd><input id="datetimeEnd" :placeholder="datas.birthday"/></dd>
+        </dl>
+        <dl>
+            <dd>所在地区</dd>
+            <dd><a id="expressArea" href="javascript:void(0)">
+                <span>{{datas.province}}  {{datas.city}} </span>
+            </a><img src="../imgs/arrow_geuee.png"/></dd>
+        </dl>
+        <input type="button" class="signin" @click="subminsignin" :disabled="submindisabledSty"
+               :class="{signinup:!submindisabledSty}" value="修改">
+
+    </section>
+
+
+    <aside>
+        <div class="popup" v-if="clearr_name">
+            <div class="editor_box">
+                <div class="editor">
+                    <div class="title">更改用户名</div>
+                    <div class="yiyoutel">当前用户名：{{datas.nickname}}</div>
+                    <div class="inputtel">
+                        <input type="text" class="telnuml" v-model="defauleusername" :placeholder="datas.nickname">
+                    </div>
+                    <div class="inputtel">
+                        <input type="button" class=" center" value="确定" @click="usernamesubmile"
+                               :disabled="usernamedisableSubmit" :class="{signinup:!usernamedisableSubmit}">
+                        <input type="button" class=" centers" @click="usernamecancel" value="取消">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+    <aside>
+        <div class="popup" v-show="clearr_tel">
+            <div class="editor_box">
+                <div class="editor">
+                    <div class="title">更改手机号</div>
+                    <div class="yiyoutel">当前手机号：{{datas.mobile}}</div>
+                    <div class="inputtel">
+                        <input id="changCity" v-model="teldata.countryCode" class="changinput">
+                    </div>
+                    <div class="inputtel">
+                        <input type="tel" onkeyup="value=value.replace(/[^\d]/g,'') " ng-pattern="/[^a-zA-Z]/"
+                               placeholder="请输入手机" v-model="telusername">
+                    </div>
+                    <div class="inputtel">
+                        <input type="text" class="firet" v-model="telCode">
+                        <input @click="telauthentication" type="button" v-model="teldata.Counttex" class="scent"
+                               :disabled="teldata.disabledSty" :class="{disabled:!teldata.disabledSty}">
+                    </div>
+                    <div class="inputtel">
+                        <input type="button" class=" center" value="确定" @click="telsubmission"
+                               :disabled="teldata.disableSubmit" :class="{signinup:!teldata.disableSubmit}">
+                        <input type="button" class=" centers" @click="telcancel" value="取消">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </aside>
+    <aside>
+        <div class="popup" v-show="clearr_emai">
+            <div class="editor_box">
+                <div class="editor">
+                    <div class="title">更改邮箱</div>
+                    <div class="yiyoutel">当前用户名：{{datas.email}}</div>
+                    <div class="inputtel">
+                        <input type="text" class="telnuml" v-model="emailname">
+                    </div>
+                    <div class="inputtel">
+                        <input type="text" class="firet" v-model="emailCode">
+                        <input @click="emailauthentication" type="button" v-model="email.Counttex" class="scent"
+                               :disabled="email.disabledSty" :class="{disabled:!email.disabledSty}">
+
+                    </div>
+                    <div class="inputtel">
+                        <input type="button" class=" center" value="确定" @click="emailsubmission"
+                               :disabled="email.disableSubmit" :class="{signinup:!email.disableSubmit}">
+                        <input type="button" class=" centers" @click="emailcancel" value="取消">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="popuparticle" v-html="tishi" v-if="tishidisa"></div>
+    <div class="lodingboc" v-show="lodingboc">
+        <img src="../imgs/loding.gif" alt="">
+    </div>
+</div>
+
+</div>
+
+<div class="browser">
+    <!--选择地区弹层-->
+    <div id="areaLayer" class="express-area-box">
+
+        <div class="headeret">
+            <h3>选择地区</h3>
+            <a id="backUp" class="back" href="javascript:void(0)" title="返回"></a>
+            <a id="closeArea" class="close" href="javascript:void(0)" title="关闭"></a>
+        </div>
+        <div class="articleet" id="areaBox">
+            <ul id="areaList" class="area-list"></ul>
+        </div>
+
+    </div>
+
+    <!--遮罩层-->
+
+    <div id="areaMask" class="mask"></div>
+
+</div>
+<script src="../js/jquery.area.js"></script>
+<script src="../js/wxapis.js"></script>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            ddt:'',
+            defauleusername: '',
+            usernamedisableSubmit: true,
+            teldata: {
+                changCity: [
+                    {
+                        "country": "阿尔巴尼亚",
+                        "code": "355"
+                    },
+                    {
+                        "country": "阿尔及利亚",
+                        "code": "213"
+                    },
+                    {
+                        "country": "安道尔",
+                        "code": "33628"
+                    },
+                    {
+                        "country": "安哥拉",
+                        "code": "224"
+                    },
+                    {
+                        "country": "阿根廷",
+                        "code": "54"
+                    },
+                    {
+                        "country": "澳大利亚",
+                        "code": "61"
+                    },
+                    {
+                        "country": "奥地利",
+                        "code": "43"
+                    },
+                    {
+                        "country": "巴哈马",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "巴林",
+                        "code": "973"
+                    },
+                    {
+                        "country": "孟加拉国",
+                        "code": "880"
+                    },
+                    {
+                        "country": "巴巴多斯",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "巴西",
+                        "code": "55"
+                    },
+                    {
+                        "country": "比利时",
+                        "code": "32"
+                    },
+                    {
+                        "country": "伯利兹",
+                        "code": "501"
+                    },
+                    {
+                        "country": "贝宁",
+                        "code": "229"
+                    },
+                    {
+                        "country": "百幕大",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "不丹",
+                        "code": "975"
+                    },
+                    {
+                        "country": "波利维亚",
+                        "code": "591"
+                    },
+                    {
+                        "country": "博茨瓦纳",
+                        "code": "267"
+                    },
+                    {
+                        "country": "文莱",
+                        "code": "673"
+                    },
+                    {
+                        "country": "保加利亚",
+                        "code": "359"
+                    },
+                    {
+                        "country": "缅甸",
+                        "code": "95"
+                    },
+                    {
+                        "country": "布隆迪",
+                        "code": "257"
+                    },
+                    {
+                        "country": "喀麦隆",
+                        "code": "237"
+                    },
+                    {
+                        "country": "加拿大",
+                        "code": "1"
+                    },
+                    {
+                        "country": "加那利群岛",
+                        "code": "34"
+                    },
+                    {
+                        "country": "佛得角",
+                        "code": "238"
+                    },
+                    {
+                        "country": "开曼群岛",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "中非共和国",
+                        "code": "236"
+                    },
+                    {
+                        "country": "乍得",
+                        "code": "235"
+                    },
+                    {
+                        "country": "智利",
+                        "code": "56"
+                    },
+                    {
+                        "country": "中国",
+                        "code": "86"
+                    },
+                    {
+                        "country": "哥伦比亚",
+                        "code": "57"
+                    },
+                    {
+                        "country": "刚果",
+                        "code": "242"
+                    },
+                    {
+                        "country": "哥斯达黎加",
+                        "code": "506"
+                    },
+                    {
+                        "country": "古巴",
+                        "code": "53"
+                    },
+                    {
+                        "country": "塞浦路斯",
+                        "code": "357"
+                    },
+                    {
+                        "country": "捷克斯洛伐克",
+                        "code": "42"
+                    },
+                    {
+                        "country": "丹麦",
+                        "code": "45"
+                    },
+                    {
+                        "country": "吉布提",
+                        "code": "253"
+                    },
+                    {
+                        "country": "多米尼加国",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "东萨摩亚",
+                        "code": "685"
+                    },
+                    {
+                        "country": "厄瓜多尔",
+                        "code": "593"
+                    },
+                    {
+                        "country": "埃及",
+                        "code": "20"
+                    },
+                    {
+                        "country": "萨尔瓦多",
+                        "code": "503"
+                    },
+                    {
+                        "country": "英国",
+                        "code": "44"
+                    },
+                    {
+                        "country": "赤道几内亚",
+                        "code": "240"
+                    },
+                    {
+                        "country": "埃塞俄比亚",
+                        "code": "251"
+                    },
+                    {
+                        "country": "福克兰群岛",
+                        "code": "306"
+                    },
+                    {
+                        "country": "斐济",
+                        "code": "679"
+                    },
+                    {
+                        "country": "芬兰",
+                        "code": "358"
+                    },
+                    {
+                        "country": "法国",
+                        "code": "33"
+                    },
+                    {
+                        "country": "法属波里尼西亚",
+                        "code": "689"
+                    },
+                    {
+                        "country": "加蓬",
+                        "code": "241"
+                    },
+                    {
+                        "country": "冈比亚",
+                        "code": "220"
+                    },
+                    {
+                        "country": "德国",
+                        "code": "49"
+                    },
+                    {
+                        "country": "加纳",
+                        "code": "233"
+                    },
+                    {
+                        "country": "希腊",
+                        "code": "30"
+                    },
+                    {
+                        "country": "格林纳达",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "关岛",
+                        "code": "671"
+                    },
+                    {
+                        "country": "圭亚那",
+                        "code": "592"
+                    },
+                    {
+                        "country": "海地",
+                        "code": "509"
+                    },
+                    {
+                        "country": "洪都拉斯",
+                        "code": "504"
+                    },
+                    {
+                        "country": "香港",
+                        "code": "852"
+                    },
+                    {
+                        "country": "匈牙利",
+                        "code": "36"
+                    },
+                    {
+                        "country": "冰岛",
+                        "code": "354"
+                    },
+                    {
+                        "country": "印度",
+                        "code": "91"
+                    },
+                    {
+                        "country": "印度尼西亚",
+                        "code": "62"
+                    },
+                    {
+                        "country": "伊朗",
+                        "code": "98"
+                    },
+                    {
+                        "country": "伊拉克",
+                        "code": "964"
+                    },
+                    {
+                        "country": "爱尔兰",
+                        "code": "353"
+                    },
+                    {
+                        "country": "以色列",
+                        "code": "972"
+                    },
+                    {
+                        "country": "意大利",
+                        "code": "39"
+                    },
+                    {
+                        "country": "牙买加",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "日本",
+                        "code": "81"
+                    },
+                    {
+                        "country": "约旦",
+                        "code": "962"
+                    },
+                    {
+                        "country": "几内亚",
+                        "code": "224"
+                    },
+                    {
+                        "country": "柬埔寨",
+                        "code": "855"
+                    },
+                    {
+                        "country": "肯尼亚",
+                        "code": "254"
+                    },
+                    {
+                        "country": "朝鲜民主主义人民共和国",
+                        "code": "850"
+                    },
+                    {
+                        "country": "韩国",
+                        "code": "82"
+                    },
+                    {
+                        "country": "科威特",
+                        "code": "965"
+                    },
+                    {
+                        "country": "老挝",
+                        "code": "856"
+                    },
+                    {
+                        "country": "黎巴嫩",
+                        "code": "961"
+                    },
+                    {
+                        "country": "莱索托",
+                        "code": "266"
+                    },
+                    {
+                        "country": "利比里亚",
+                        "code": "231"
+                    },
+                    {
+                        "country": "利比亚",
+                        "code": "218"
+                    },
+                    {
+                        "country": "列支敦士登",
+                        "code": "41"
+                    },
+                    {
+                        "country": "卢森堡",
+                        "code": "352"
+                    },
+                    {
+                        "country": "马达加斯加",
+                        "code": "261"
+                    },
+                    {
+                        "country": "马拉维",
+                        "code": "265"
+                    },
+                    {
+                        "country": "马来西亚",
+                        "code": "60"
+                    },
+                    {
+                        "country": "马尔代夫",
+                        "code": "960"
+                    },
+                    {
+                        "country": "马里",
+                        "code": "223"
+                    },
+                    {
+                        "country": "马耳他",
+                        "code": "356"
+                    },
+                    {
+                        "country": "马里亚纳群岛",
+                        "code": "670"
+                    },
+                    {
+                        "country": "马提尼克(法)",
+                        "code": "596"
+                    },
+                    {
+                        "country": "毛里塔尼亚",
+                        "code": "222"
+                    },
+                    {
+                        "country": "毛里求斯",
+                        "code": "230"
+                    },
+                    {
+                        "country": "墨西哥",
+                        "code": "52"
+                    },
+                    {
+                        "country": "摩纳哥",
+                        "code": "3393"
+                    },
+                    {
+                        "country": "蒙特塞拉特岛(英)",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "摩洛哥",
+                        "code": "212"
+                    },
+                    {
+                        "country": "莫桑比克",
+                        "code": "258"
+                    },
+                    {
+                        "country": "纳米比亚",
+                        "code": "264"
+                    },
+                    {
+                        "country": "瑙鲁",
+                        "code": "674"
+                    },
+                    {
+                        "country": "尼伯尔",
+                        "code": "977"
+                    },
+                    {
+                        "country": "新喀里多尼亚",
+                        "code": "687"
+                    },
+                    {
+                        "country": "新西兰",
+                        "code": "64"
+                    },
+                    {
+                        "country": "尼加拉瓜",
+                        "code": "505"
+                    },
+                    {
+                        "country": "尼日尔",
+                        "code": "227"
+                    },
+                    {
+                        "country": "尼日利亚",
+                        "code": "234"
+                    },
+                    {
+                        "country": "纽埃岛",
+                        "code": "683"
+                    },
+                    {
+                        "country": "诺福克岛",
+                        "code": "6723"
+                    },
+                    {
+                        "country": "挪威",
+                        "code": "47"
+                    },
+                    {
+                        "country": "荷兰",
+                        "code": "31"
+                    },
+                    {
+                        "country": "阿曼",
+                        "code": "968"
+                    },
+                    {
+                        "country": "巴基斯坦",
+                        "code": "92"
+                    },
+                    {
+                        "country": "巴拿马",
+                        "code": "507"
+                    },
+                    {
+                        "country": "巴布亚新几内亚",
+                        "code": "675"
+                    },
+                    {
+                        "country": "巴拉圭",
+                        "code": "595"
+                    },
+                    {
+                        "country": "秘鲁",
+                        "code": "51"
+                    },
+                    {
+                        "country": "波多黎各",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "菲律宾",
+                        "code": "63"
+                    },
+                    {
+                        "country": "波兰",
+                        "code": "48"
+                    },
+                    {
+                        "country": "葡萄牙",
+                        "code": "351"
+                    },
+                    {
+                        "country": "卡塔尔",
+                        "code": "974"
+                    },
+                    {
+                        "country": "留尼旺岛(法)",
+                        "code": "262"
+                    },
+                    {
+                        "country": "罗马尼亚",
+                        "code": "40"
+                    },
+                    {
+                        "country": "卢旺达",
+                        "code": "250"
+                    },
+                    {
+                        "country": "圣马力诺",
+                        "code": "39549"
+                    },
+                    {
+                        "country": "圣多美及普林西比",
+                        "code": "239"
+                    },
+                    {
+                        "country": "沙特阿拉伯",
+                        "code": "966"
+                    },
+                    {
+                        "country": "塞内加尔",
+                        "code": "221"
+                    },
+                    {
+                        "country": "塞舌尔",
+                        "code": "248"
+                    },
+                    {
+                        "country": "塞拉利昂",
+                        "code": "232"
+                    },
+                    {
+                        "country": "新加坡",
+                        "code": "65"
+                    },
+                    {
+                        "country": "所罗门群岛",
+                        "code": "677"
+                    },
+                    {
+                        "country": "索马里",
+                        "code": "252"
+                    },
+                    {
+                        "country": "南非",
+                        "code": "27"
+                    },
+                    {
+                        "country": "西班牙",
+                        "code": "34"
+                    },
+                    {
+                        "country": "斯里兰卡",
+                        "code": "94"
+                    },
+                    {
+                        "country": "圣克里斯托弗和尼维斯",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "圣卢西亚",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "圣文森特岛",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "苏丹",
+                        "code": "249"
+                    },
+                    {
+                        "country": "苏里南",
+                        "code": "597"
+                    },
+                    {
+                        "country": "斯威士兰",
+                        "code": "268"
+                    },
+                    {
+                        "country": "瑞典",
+                        "code": "46"
+                    },
+                    {
+                        "country": "瑞士",
+                        "code": "41"
+                    },
+                    {
+                        "country": "叙利亚",
+                        "code": "963"
+                    },
+                    {
+                        "country": "台湾",
+                        "code": "886"
+                    },
+                    {
+                        "country": "坦桑尼亚",
+                        "code": "255"
+                    },
+                    {
+                        "country": "泰国",
+                        "code": "66"
+                    },
+                    {
+                        "country": "多哥",
+                        "code": "228"
+                    },
+                    {
+                        "country": "汤加",
+                        "code": "676"
+                    },
+                    {
+                        "country": "特立尼达和多巴哥",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "突尼斯",
+                        "code": "216"
+                    },
+                    {
+                        "country": "土耳其",
+                        "code": "90"
+                    },
+                    {
+                        "country": "特克斯和凯科斯群岛(英)",
+                        "code": "1809"
+                    },
+                    {
+                        "country": "科摩罗",
+                        "code": "269"
+                    },
+                    {
+                        "country": "科克群岛(新)",
+                        "code": "682"
+                    },
+                    {
+                        "country": "阿拉伯联合酋长国",
+                        "code": "971"
+                    },
+                    {
+                        "country": "乌干达",
+                        "code": "256"
+                    },
+                    {
+                        "country": "美国",
+                        "code": "1"
+                    },
+                    {
+                        "country": "乌拉圭",
+                        "code": "598"
+                    },
+                    {
+                        "country": "委内瑞拉",
+                        "code": "58"
+                    },
+                    {
+                        "country": "越南",
+                        "code": "84"
+                    },
+                    {
+                        "country": "也门",
+                        "code": "969"
+                    },
+                    {
+                        "country": "南斯拉夫",
+                        "code": "38"
+                    },
+                    {
+                        "country": "扎伊尔",
+                        "code": "243"
+                    },
+                    {
+                        "country": "赞比亚",
+                        "code": "260"
+                    },
+                    {
+                        "country": "津巴布韦",
+                        "code": "263"
+                    }],
+                countryCode: '86',
+                username: '',
+                password: '',
+                type: 0,
+                Counttex: '获取验证码',
+                disabledSty: true,
+                disableSubmit: true,
+            },
+            email: {
+                Code: '',
+                username: '',
+                password: '',
+                type: 0,
+                Counttex: '获取验证码',
+                disabledSty: true,
+            },
+            emailname: '',
+            emailCode: '',
+            clearr_emai: false,
+            telCode: '',
+            telusername: '',
+            defaindex: 0,
+            cebootty: 0,
+            clearr_tel: false,
+            clearr_name: false,
+            disableSubmit: false,
+            cemsg: "",
+            datas: {},
+            gailimg: '../imgs/nv-off.png',
+            manlimg: '../imgs/nan-off.png',
+            tishidisa: false,
+            tishi: "",
+            subimges:false,
+            lodingboc:true
+
+
+        },
+        computed:{
+            submindisabledSty:function () {
+                if(this.datas.nickname&&this.datas.birthday&&this.datas.sex&&this.datas.city){
+                    if(
+                        this.datas.nickname==this.vmdatas.$options.nickname
+                        &&this.datas.birthday==this.vmdatas.$options.birthday
+                        &&this.datas.sex==this.vmdatas.$options.sex
+                        &&this.datas.city==this.vmdatas.$options.city
+                        &&this.subimges==false
+                    ){
+                        return true;
+                    }else {
+                        return false;
+                    }
+                }
+                else {
+                    return true;
+                }
+            }
+        },
+        watch: {
+            //修改用户名
+            defauleusername: function (val, oldVal) {
+                if (val != '') {
+                    this.usernamedisableSubmit = false;
+                }
+
+            },
+            //修改绑定手机
+            telusername: function (val, oldVal) {
+                if (val != this.datas.mobile) {
+                    if (this.teldata.countryCode == "86") {
+                        var tel = /^13[0-9]{9}$|14[0-9]{9}|15[0-9]{9}$|18[0-9]{9}$/;
+                        console.log(this.teldata.countryCode);
+                        if (tel.test(val)) {
+                            this.teldata.disabledSty = false;
+                        } else {
+                            this.teldata.disabledSty = true;
+                        }
+                    } else if (val.length > 5) {
+                        this.teldata.disabledSty = false;
+                    }
+                    else {
+                        this.teldata.disabledSty = true;
+                    }
+                } else {
+                    this.teldata.disabledSty = true;
+                }
+            },
+            telCode: function (val, oldVal) {
+                if (this.teldata.disabledSty == true || val.length > 3) {
+                    this.teldata.disableSubmit = false;
+
+                }
+                else {
+                    this.teldata.disableSubmit = true;
+                }
+            },
+
+            //修改邮箱
+            emailname: function (val, oldVal) {
+                if (val != this.datas.email) {
+                    var eml = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+                    if (eml.test(val)) {
+                        this.email.disabledSty = false;
+                    } else {
+                        this.email.disabledSty = true;
+                    }
+
+                } else {
+                    this.email.disabledSty = true;
+                }
+            },
+            emailCode: function (val, oldVal) {
+                if (this.email.disabledSty == true || val.length > 3) {
+                    this.email.disableSubmit = false;
+
+                }
+                else {
+                    this.email.disableSubmit = true;
+                }
+            },
+
+
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("device_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id = Number(GetQueryString("device_id").substr(1));
+            }
+            else {
+
+            }
+            setTimeout(function () {
+                getStages('user');
+            }, 80);
+            setTimeout(function () {
+                if (!BooleanStages) {
+                   window.location.href = golinks("weixinsq.html");
+                } else {
+                    _this.token = StagesDatas.usermsg.access_token;
+                    _this.uid = StagesDatas.usermsg.uid;
+                    _this.datas.province="省";
+                    _this.datas.city="市";
+
+                    //10 获取用户信息√
+                    jsonAjax('/Home/User/api_get_member_info',
+                        {access_token: _this.token, uid: _this.uid}
+                    ).done(function (data) {
+                        console.log(data);
+                        if (data.code == 40002) {
+                            // window.location.href = golinks('weixinsq.html')
+                        }
+                        if (data.code == 40010) {
+                            //  window.location.href = golinks('weixinsq.html')
+                        }
+                        else if (data.code == 0) {
+                            console.log(data.data)
+                            console.log(data.data)
+                            console.log(data.data)
+                            console.log(data.data)
+                            console.log(data.data)
+                            _this.datas = data.data;
+                            if(data.data.city==""){
+                                _this.datas.city="市";
+                            }
+                            if(data.data.province==""){
+                                _this.datas.province="省";
+                            }
+                            if(!data.data.province && data.data.city){
+                                //_this.datas.province="省";
+                                //_this.datas.city="市";
+                            }
+
+
+
+                            /*_this.datakey=[]*/
+                            $.each(_this.datas, function(key,obj) {
+                                // alert(obj.tagName);
+                                if(obj==''){
+                                    _this.datas[key]=''
+                                }
+                                //console.log(_this.datas)
+                            });
+                            console.log(_this.datas)
+                            /* for(key in _this.datas){
+                             _this.datakey.push(key)
+                             }*/
+                            console.log(_this.datas)
+                            _this.defauleusername=data.data.nickname;
+                            _this.vmdatas = new Vue(_this.datas);
+                            _this.submindisabledSty= true
+                            switch (data.data.sex) {
+                                case '1':
+                                    _this.manlimg = '../imgs/nan-on.png';
+                                    break;
+                                case '2':
+                                    _this.gailimg = '../imgs/nv-on.png';
+                                    break;
+                                default:
+                            }
+
+
+                        }
+
+                    })
+                        .fail(function () {
+                            console.log("error");
+                        });
+                }
+                _this.lodingboc=false;
+                }, 300);
+
+
+        },
+        methods: {
+            //更改用户名
+            deviceinfor: function () {
+                this.clearr_name = true
+            },
+            usernamesubmile: function () {
+                this.clearr_name = false;
+                this.datas.nickname=this.defauleusername;
+            },
+            usernamecancel: function () {
+                this.clearr_name = false;
+            },
+            //手机号码更改手机号码更改
+            telparameter: function () {
+                this.clearr_tel = true;
+
+            },
+            telauthentication: function () {
+                var _this = this;
+                _this.teldata.disabledSty = true;
+                this.teldata.Count = 60;
+                _this.teldata.Counttex = "重发(" + _this.teldata.Count + ")";
+                var settime = setInterval(function () {
+                    _this.teldata.Count--;
+                    _this.teldata.Counttex = "重发(" + _this.teldata.Count + ")";
+                    if (_this.teldata.Count < 1) {
+                        _this.teldata.disabledSty = false;
+                        _this.teldata.Counttex = "重发";
+                        clearInterval(settime);
+                    }
+                }, 1000);
+                //02 发送验证码√
+
+                jsonAjax("/Home/User/sendsafecode",
+                    {
+                        country_code: Number(_this.teldata.countryCode),
+                        type: 3,
+                        username: Number(_this.telusername),
+                        usertype: 3
+                    }
+                ).done(function (data) {
+                    console.log(data)
+                    if (data.code == 30016) {
+                        _this.tishidisa = true;
+                        _this.tishi = data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                        _this.teldata.disabledSty = false;
+                        _this.teldata.Counttex = "获取验证码";
+                        clearInterval(settime);
+                    } else {
+                        _this.tishidisa = true;
+                        _this.tishi = data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            },
+            telsubmission: function () {
+                //04 绑定/更新手机号√
+                var _this = this;
+                jsonAjax("/Home/User/api_update_mobile",
+                    {
+                        access_token: _this.token,
+                        country_code: _this.teldata.countryCode,
+                        mobile: _this.telusername,
+                        safecode: _this.telCode,
+                        uid: _this.uid
+                    }
+                ).done(function (data) {
+                    console.log(data)
+                    if (data.code == 30005) {
+                        _this.tishidisa = true;
+                        _this.tishi = data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                        _this.datas.mobile=_this.telusername;
+                    } else {
+                        _this.tishidisa = true;
+                        _this.clearr_tel = false;
+                        _this.tishi = data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            },
+            telcancel: function () {
+                this.clearr_tel = false;
+
+            },
+            //邮箱更改
+            emallparameter: function () {
+                this.clearr_emai = true;
+            },
+            emailauthentication: function () {
+                var _this = this;
+                _this.email.disabledSty = true;
+                this.email.Count = 60;
+                _this.email.Counttex = "重发(" + _this.email.Count + ")";
+                var settime = setInterval(function () {
+                    _this.email.Count--;
+                    _this.email.Counttex = "重发(" + _this.email.Count + ")";
+                    if (_this.email.Count < 1) {
+                        _this.email.disabledSty = false;
+                        _this.email.Counttex = "重发";
+                        clearInterval(settime);
+                    }
+                }, 1000);
+                //02 发送验证码√
+                jsonAjax("/Home/User/sendsafecode",
+                    {
+                        country_code: '',
+                        type: 2,
+                        username: _this.emailname,
+                        usertype: 2
+                    }
+                ).done(function (data) {
+                    console.log(data)
+                    if (data.code == 0) {
+                        _this.tishidisa = true;
+                        _this.tishi = "验证码已发送";
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                    } else if (data.msg == "邮箱被占用") {
+                        _this.tishidisa = true;
+                        _this.tishi = "邮箱被占用";
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                        _this.username = '';
+                        _this.Counttex = "获取验证码";
+                        clearInterval(settime);
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+
+            },
+            emailsubmission: function () {
+                var _this = this;
+                //05 绑定/更新邮箱√
+                jsonAjax("/Home/User/api_update_email",
+                    {
+                        access_token: _this.token,
+                        email: _this.emailname,
+                        safecode: _this.emailCode,
+                        uid: _this.uid
+                    }
+                ).done(function (data) {
+                    if (data.code == 30016) {
+                        _this.tishidisa = true;
+                        _this.tishi = data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                    } else if (data.code == 0) {
+                        _this.tishidisa = true;
+                        _this.clearr_emai = false;
+                        _this.tishi = data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                        _this.datas.email=_this.emailname;
+                    } else {
+                        _this.tishidisa = true;
+                        _this.tishi = data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+
+            },
+            emailcancel: function () {
+                this.clearr_emai = false;
+            },
+            subminsignin: function () {
+                // 09 更新用户信息√
+                var _this = this;
+                jsonAjax("/Home/User/api_update_member_info",JSON.stringify(
+                    {
+                        access_token: _this.token,
+                        data: _this.datas,
+                        uid: _this.uid
+                    })
+                ).done(function (data) {
+                    console.log(data)
+                    if (data.code == 30005) {
+                        _this.tishidisa = true;
+                        _this.tishi = data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                    }  if (data.code == 0) {
+                        window.location.href = golinks("personaldata/personaldata.html");
+                    }else {
+                        _this.tishidisa = true;
+                        _this.clearr_tel = false;
+                        _this.tishi = data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },
+
+
+            gailimgfn: function () {
+                this.gailimg = '../imgs/nv-on.png';
+                this.manlimg = '../imgs/nan-off.png';
+                this.datas.sex = 2;
+            },
+            manlimgfn: function () {
+                this.manlimg = '../imgs/nan-on.png';
+                this.gailimg = '../imgs/nv-off.png';
+                this.datas.sex = 1;
+            },
+
+
+            clearreboot: function (type, clboot) {
+                _this = this;
+                _this.clearr_eboot = true;
+                _this.cemsg = clboot;
+                _this.cebootty = type;
+
+            },
+            submission: function () {
+                _this = this;
+                jsonAjax('/Home/Device/clear_device',
+                    {access_token: _this.token, device_id: _this.device_id, type: _this.cebootty, uid: _this.uid}
+                ).done(function (data) {
+                    if (data.code == 0) {
+                        window.location.href = golinks("myequipment.html");
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                _this.clearr_eboot = false;
+
+            },
+            cancel: function () {
+                _this = this;
+                _this.clearr_eboot = false;
+            },
+            goback: function () {
+                var _this = this;
+                window.location.href = golinks("kitContents/ubddevice.html?details=" + _this.device_id + "")
+            }
+
+        }
+
+    });
+    //国码
+    var datacity = [];
+    $('#changCity').choice().scroller({
+        theme: 'ios',
+        display: 'bottom',
+        lang: 'zh',
+        onInit: function (event, inst) {
+            for (var i = 0; i < app.teldata.changCity.length; i++) {
+                datacity.push('-' + app.teldata.changCity[i].code + '-' + app.teldata.changCity[i].country)
+            }
+        },
+        wheels: [
+            [{
+                data: datacity
+            }]
+        ],
+        onSet: function (event, inst) {
+            app.teldata.countryCode = inst._value.replace(/[^0-9]/ig, "");
+            app.teldata.username = '';
+
+        }
+    });
+    //国码
+    //出生年月
+    var now = new Date(),
+        tady = new Date(),
+        min = new Date(now.getFullYear() - 70, now.getMonth(), now.getDate());
+    var currYear = (new Date()).getFullYear();
+    $('#datetimeEnd').choice().date({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        min: min,
+        max: tady,
+        startYear: currYear,
+        onSet: function (event, inst) {
+            app.datas.birthday = inst._value;
+        }
+    });
+
+    $.ajax({
+        type: "post",
+        url: 'http://gh.zayata.com/index.php?s=/Ibox/Web/getSdkConf',
+        data: {url:window.location.href},
+        dataType: 'json',
+    }).done(function (data) {
+        wx.config({
+            debug: false,
+            appId: data.appId,
+            timestamp: data.timestamp,
+            nonceStr: data.nonceStr,
+            signature: data.signature,
+            jsApiList: ['chooseImage', 'uploadImage', 'downloadImage']
+        });
+
+
+
+    });
+    function take_a_photo() {
+        //拍照或从手机相册中选图接口
+        wx.chooseImage({
+            count: 1, // 默认9
+            sizeType: ['original'],
+            sourceType: ['album', 'camera'],
+            success: function (res) {
+                var localId = res.localIds[0];//选择图片成功，上传到微信服务器
+                wx.getLocalImgData({
+                    localId: localId,
+                    success: function (res) {
+                        var localData = res.localData;
+
+                        localData = localData.replace('jgp', 'jpeg');
+
+                        var dataurl;
+                        if (localData.indexOf('base64') < 0) {
+                            dataurl = 'data:image/jpeg;base64,' + localData;
+                        }else {
+                            dataurl=localData;
+                        }
+                        var imgs = {};
+                        imgs["file[0]"] =dataurl;
+                        $.ajax({
+                            url: 'http://api.zayata.com/index.php?s=/Home/File/uploadPicture',
+                            type: 'POST',
+                            data:imgs,
+
+                        }).done(function (data) {
+                            app.datas.headimgurl=data.data[0].imgurl;
+                            var _this = this;
+                            jsonAjax("/Home/User/api_update_member_info",JSON.stringify(
+                                {
+                                    access_token: app.token,
+                                    data: app.datas,
+                                    uid: app.uid
+                                })
+                            ).done(function (data) {
+
+                            });
+                        })
+                            .fail(function () {
+                                console.log("error");
+                            });
+                    }
+                })
+
+            }
+        })
+    }
+
+
+
+
+</script>
+</body>
+
+</html>
+

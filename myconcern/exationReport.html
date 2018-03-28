@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <script src="../js/jquery.min.js"></script>    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+    <style>
+        header nav:nth-of-type(1){  text-align: left;}
+        header nav:nth-of-type(1) img{ padding-left: 1rem; }
+        article{ margin-top: 20px;  box-sizing: border-box; height: inherit;}
+        article .title{ display: flex;padding: 0.5rem 1rem;}
+        article .title span{flex: 1;}
+        article .title span img{height: 22px; width: auto; vertical-align: middle;}
+        article .title span:nth-of-type(1){ text-align: left;}
+        article .title span:nth-of-type(2){ text-align: right; color: #00cc33;}
+        article ul{ display: flex;  width: 100%;padding: 0.5rem; position: relative;}
+        article ul li{ flex:1; height: 5rem; text-align: center; overflow: hidden; position: relative;}
+        article ul li img{ width:95%; height:100%;}
+        article ul .Prompt{ position: absolute; width: 100%; bottom: 20%; text-align: center; left: 0;}
+
+    </style>
+
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav @click="goback"><img src="../imgs/arrow_left.png"></nav>
+        <nav>提交报告</nav>
+        <nav></nav>
+    </header>
+    <section>
+        <article v-for="item in datas">
+            <div class="title">
+                <span><img src="../imgs/jianchabaogao.png">{{item[0].patient_name}} </span>
+                <span v-if="item[0].records.length>0">更多</span>
+                <span v-else>添加</span>
+            </div>
+            <ul>
+
+                <li>
+                    <span v-if="item[0].records[0]">
+                       <img :src="item[0].records[0].img[0].imgurl">
+                    </span>
+                </li>
+                <li>
+                    <span v-if="item[0].records[1]">
+                       <img :src="item[0].records[1].img[0].imgurl">
+                    </span>
+                </li>
+                <li>
+                    <span v-if="item[0].records[2]">
+                       <img :src="item[0].records[2].img[0].imgurl">
+                    </span>
+                </li>
+                <li v-if="item[0].records.length<1" class="Prompt">还没有报告</li>
+            </ul>
+        </article>
+    </section>
+</div>
+
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            datas: []
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("cid");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.detaCid = Number(GetQueryString("cid").substr(1));
+            }
+            else {
+
+            }
+            var tokens = window.localStorage.getItem('token');//登录或注册接口获得的安全码
+
+            var uids = window.localStorage.getItem('uid');//用户ID
+            _this.token = tokens;
+            _this.uid = uids;
+            if (_this.token == null && _this.uid == null) {
+                window.location.href =golinks("")
+            }
+            var deviceCids =JSON.parse( window.localStorage.getItem('device_cid'));
+            for(var i=0; i<deviceCids.length;i++){
+                this.getajax(deviceCids[i].cid)
+            }
+
+
+            //19 获取服药人的报告列表√
+
+        },
+        methods: {
+            getajax:function (cid) {
+                var _this=this;
+                jsonAjax("/Home/User/get_patient_records",{
+                    access_token: _this.token,
+                    cid:cid,
+                    type:2,
+                    uid: _this.uid
+                }).done(function (data) {
+                    if (data.code ==0) {
+                        _this.datas.push(data.data);
+                        console.log(_this.datas)
+                    }
+                    else {
+                        // window.location.href = "http://192.168.0.138/"
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            },
+            patientdata: function (item) {
+                //window.location.href="http://192.168.0.138/myconcern/editPatients.html?detacid="+item.cid+""
+            },
+            goback: function () {
+                //window.location.href="http://192.168.0.138/myconcern/myconcern.html"
+            }
+
+        }
+
+    });
+</script>
+</body>
+
+</html>

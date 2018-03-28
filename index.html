@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="js/jquery.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+   (function () {
+        setTimeout(function(){
+            getStages('user');
+        },80);
+        setTimeout(function(){
+            if(!BooleanStages){
+                window.location.href=golinks("weixinsq.html");
+                return false;
+            }else {
+                window.location.href=golinks("medicationplan.html");
+            }
+        },200);
+    })();
+</script>
+</body>
+
+</html>
+

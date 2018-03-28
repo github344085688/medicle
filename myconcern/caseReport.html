@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/caseReport.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+    <style>
+    </style>
+
+</head>
+<body>
+<div id="app">
+    <div class="centheader">
+            <input type="button" @click="bingli" value="体检报告" :disabled="gettype==2" :class="{ 'active': gettype==2}">
+            <input type="button" @click="bingli" value="历史病历" :disabled="gettype==1" :class="{ 'active': gettype==1}">
+    </div>
+    <div class="search">
+        <input type="text" class="inputtexts" v-model="sousuo" >
+        <div class="inputbuttons" @click="inputbuttons" ></div>
+    </div>
+    <section>
+        <div style="text-align: center; padding-top: 50px;" v-if="notsousuo">没有相关内容</div>
+        <article v-for="(item,index) in datas" @click="Addcaseimg(item[0].cid,item)">
+            <div class="title">
+                <span><img src="../imgs/jianchabaogao.png">{{item[0].patient_name}} </span>
+                <div v-if="item.showcar==1">
+                    <span v-if="item[0].records.length>0" >更多</span>
+                    <span v-else >添加</span>
+                </div>
+            </div>
+            <ul>
+                <li>
+                    <span v-if="item[0].records[0]">
+                       <img :src="item[0].records[0].img[0].imgurl">
+                    </span>
+                </li>
+                <li>
+                    <span v-if="item[0].records[1]">
+                       <img :src="item[0].records[1].img[0].imgurl">
+                    </span>
+                </li>
+                <li>
+                    <span v-if="item[0].records[2]">
+                       <img :src="item[0].records[2].img[0].imgurl">
+                    </span>
+                </li>
+                 <li v-if="item[0].records.length<1" class="Prompt">还没有报告</li>
+            </ul>
+        </article>
+    </section>
+    <div class="lodingboc" v-show="lodingboc">
+        <img src="../imgs/loding.gif" alt="">
+    </div>
+    <div class="popuparticle" v-html="tishi" v-if="tishidisa"></div>
+</div>
+
+<script type="text/javascript">
+    var deviceid;
+    var newArryData = [];
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            datas: [],
+            Presentext: '',
+            gettype:1,
+            sousuo:'',
+            notsousuo:false,
+            lodingboc:true,
+            tishidisa:false,
+            tishi:''
+
+
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+         /*   var myurl = GetQueryString("cid");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.detaCid = Number(GetQueryString("cid").substr(1));
+            }
+            else {
+
+            }*/
+            var uploadtype = GetQueryString("uploadtype");
+            if (uploadtype != null && uploadtype.toString().length > 1) {
+                _this.gettype = Number(GetQueryString("uploadtype").substr(1));
+                if (_this.gettype == 1) {
+                    _this.Presentext = '病例报告'
+                }
+                if (_this.gettype == 2) {
+                    _this.Presentext = '体检报告'
+                }
+            }
+            else {
+                _this.gettype=1;
+            }
+            setTimeout(function () {
+                getStages('user');
+            },130);
+            setTimeout(function () {
+                if(!BooleanStages){
+                    window.location.href=golinks("weixinsq.html");
+                }else {
+                _this.token = StagesDatas.usermsg.access_token;
+                _this.uid = StagesDatas.usermsg.uid;
+                    //接口名称 11 根据用户ID获取设备列表√
+                    jsonAjax("/Home/Device/get_device_list_by_uid",
+                        {
+                            access_token: _this.token,
+                            uid: _this.uid
+                        }
+                    ).done(function (data) {
+                        console.log("ddddd")
+                        console.log(data)
+                        if(data.code==40002){
+                            window.location.href=golinks('weixinsq.html')
+                        }
+                        else if(data.code==40010){
+                            window.location.href=golinks('weixinsq.html')
+                        }
+                        if (data.data.length == 0) {
+                            window.location.href = golinks("associateddevice/wifinetwork.html");
+                        } else {
+
+                            console.log("sssss")
+                            //console.log(data)
+                            _this.cidrole=[];
+                            for (var i = 0; i < data.data.length; i++) {
+                                _this.cidrole.push({
+                                    cid: Number(data.data[i].cid),
+                                    role:Number(data.data[i].role)
+                                });
+                            }
+                            console.log(_this.cidrole)
+                            //15 根据UID获取服药人信息√
+                            jsonAjax("/Home/User/get_patient_info_by_uid", {
+                                access_token: _this.token,
+                                uid: _this.uid
+                            }).done(function (data) {
+
+                                if(data.code==40002){
+                                    window.location.href=golinks('weixinsq.html')
+                                }
+                                if(data.code==40010){
+                                    window.location.href=golinks('weixinsq.html')
+                                }
+                                if (data.code ==0) {
+                                    for (var i = 0; i < data.data.length; i++) {
+                                        _this.getajax(data.data[i].cid)
+                                    }
+                                    var device_id =[{
+                                        keyname: "device_cid",
+                                        usermsg: data.data
+                                    }
+                                    ];
+                                    setstages(device_id);
+                                    console.log("ddddddddddd")
+                                   // console.log(data.data)
+                                    deviceid = data.data;
+
+                                    for (var i = 0; i < deviceid.length; i++) {
+                                        newArryData.push(deviceid[i].patient_name)
+                                    }
+
+
+                                }
+
+                            })
+                                .fail(function () {
+                                    console.log("error");
+                                });
+
+                        }
+                    })
+                        .fail(function () {
+                            alert("error");
+                        });
+
+
+                }
+            },230);
+
+           //19 获取服药人的报告列表√
+
+        },
+        methods: {
+            getajax: function (cid) {
+                var _this = this;
+                //19 获取服药人的报告列表√
+                jsonAjax("/Home/User/get_patient_records", {
+                    access_token: _this.token,
+                    cid: cid,
+                    type: _this.gettype,
+                    uid: _this.uid
+                }).done(function (data) {
+                    if (data.code ==0) {
+                        var cidindx;
+                       for(x in _this.cidrole){
+                           console.log( _this.cidrole[x]);
+                           if(_this.cidrole[x].cid==Number(data.data[0].cid)){
+                               console.log(_this.cidrole[x].cid);
+                               cidindx=_this.cidrole[x].role;
+                           }
+                       }
+                        _this.$set(data.data, "role",cidindx)
+                        _this.datas.push(data.data);
+                        console.log( _this.datas);
+                    }
+                    else {
+
+                    }
+                    _this.lodingboc=false;
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            },
+            Addcaseimg: function (cid,item) {
+                var  _this=this;
+                if(item.role!=1&&item[0].records.length==0){
+                    _this.tishidisa=true;
+                    _this.tishi="无管理权限";
+                }else {
+                    window.location.href = golinks("myconcern/historyCase.html?cid=" + cid + "&uploadtype="+this.gettype+"&role="+item.role+"")
+                }
+
+
+            },
+            bingli: function () {
+                if(this.gettype==1){
+                    window.location.href = golinks("myconcern/caseReport.html?&uploadtype=2")
+                }else {
+                    window.location.href = golinks("myconcern/caseReport.html?&uploadtype=1")
+                }
+
+            },
+            inputbuttons:function () {
+                //19 获取服药人的报告列表√
+                var _this = this;
+                jsonAjax("/Home/User/get_patient_records", {
+                    access_token: _this.token,
+                    cid: "",
+                    query:_this.sousuo,
+                    type: _this.gettype,
+                    uid: _this.uid
+                }).done(function (data) {
+                    _this.datas=[];
+                    console.log(data);
+                    if(!data.data){
+                        _this.notsousuo=true;
+                    }else {
+                        _this.notsousuo=false;
+                        console.log(data);
+                        var cidindx;
+
+                        for(var x in _this.cidrole){
+                            console.log( _this.cidrole[x]);
+                            if(_this.cidrole[x].cid==Number(data.data[0].cid)){
+                                console.log(_this.cidrole[x].cid);
+                                cidindx=_this.cidrole[x].role;
+
+                            }
+                        }
+                        //  var index=_this.cidrole.indexOf(data.data[0].cid)
+                        _this.$set(data.data, "role",cidindx);
+                        _this.datas.push(data.data);
+
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                
+            }
+
+        }
+
+    });
+</script>
+</body>
+
+</html>

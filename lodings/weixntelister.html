@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <script src="../js/jquery.min.js"></script>    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <!--    <script src="../js/choice.js"></script>
+        <link href="../css/choice.min.css" rel="stylesheet" type="text/css"/>-->
+    <script src="../js/jsonAjax.js"></script>
+    <link rel="stylesheet" href="../css/signin.css">
+</head>
+<body>
+<div id="app">
+    <div class="centheader">
+        <div class="active">手机号</div>
+        <div @click="meillsignin" >邮箱</div>
+    </div>
+    <section>
+        <div class="logo"><img src="../imgs/logo.png"/>
+        </div>
+        <dl>
+            <dd class="cent"><input type="text" placeholder="请输入手机" v-model="username"></dd>
+        </dl>
+        <dl>
+            <dd class="cent"><input type="password" placeholder="请输6-20位密码" v-model="password" onkeyup="value=value.replace(/[, ]/g,'') "></dd>
+        </dl>
+        <input type="button" class="signin" @click="Submit" :disabled="disabledSty" :class="{signinup:!disabledSty}" value="绑定">
+    </section>
+    <div class="popuparticle" v-html="tishi" v-if="tishidisa"></div>
+
+</div>
+<script>
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            countryCode: '86',
+            cockcountry: '',
+            username: '',
+            password: '',
+            type:0,
+            disableSubmit:false,
+            tishidisa:false,
+            tishi:""
+
+        },
+        mounted: function () {
+
+        },
+        watch: {
+            username: function (val, oldVal) {
+                var tel=/^13[0-9]{9}$|14[0-9]{9}|15[0-9]{9}$|18[0-9]{9}$|17[0-9]{9}/;
+                var eml = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+                if(eml.test(val)){
+                    this.type=2;
+                    this.disableSubmit=false;
+                    return false;
+                }else {
+                    if(this.countryCode=="86"){
+                        if (tel.test(val)) {
+                            this.type=3;
+                            this.disableSubmit=false;
+                        }else {
+                            this.disableSubmit=true;
+                        }
+                    }
+                    else if(val.length>5) {
+                        this.type=3,
+                            this.disableSubmit=false;
+                    }
+                    else {
+                        this.disableSubmit=true;
+                    }
+                    this.type=3
+                }
+
+            }
+        },
+        computed:{
+            disabledSty:function () {
+                if(this.disableSubmit==false&&this.password.length>5&&this.password.length<20){
+                    return false;
+                }else {
+                    return true;
+                }
+            }
+
+        },
+        mounted:function () {
+            var _this = this;
+            setTimeout(function(){
+                getStages('weixin');
+            },60);
+            setTimeout(function(){
+                console.log( StagesDatas);
+                _this.weixindata=StagesDatas;
+            },120);
+        },
+        methods: {
+            Submit: function () {
+                var _this = this;
+                //接口名称 24 微信授权信息登陆并绑定本站用户
+                jsonAjax("/Home/User/wx_login_bind",
+                    {
+                        city:_this.weixindata.usermsg.city,
+                        country:_this.weixindata.usermsg.country,
+                        country_code: _this.countryCode,
+                        headimgurl:_this.weixindata.usermsg.headimgurl,
+                        nickname:_this.weixindata.usermsg.nickname,
+                        openid:_this.weixindata.usermsg.openid,
+                        password: _this.password,
+                        province:_this.weixindata.usermsg.province,
+                        sex:_this.weixindata.usermsg.sex,
+                        token:'s',
+                        type: _this.type,
+                        unionid:_this.weixindata.usermsg.unionid,
+                        username:_this.username,
+                    }
+                ).done(function (data) {
+                    console.log(data)
+                    console.log(data)
+                    console.log(data)
+                    console.log(data)
+                    if (data.code ==0) {
+                        var usermsg=[{
+                            keyname:"user",
+                            usermsg:data.data,
+                            languages:'zh-cn'
+                        }];
+                        setstages(usermsg);
+                        //11 根据用户ID获取设备列表√
+                        jsonAjax("/Home/Device/get_device_list_by_uid",
+                            {
+                                access_token: data.data.access_token,
+                                uid: data.data.uid
+                            }
+                        ).done(function (data) {
+                            console.log(data)
+                            if(data.data.length<=0){
+                                window.location.href=golinks("associateddevice/wifinetwork.html");
+                            }else {
+
+                                var device_id =[{
+                                    keyname: "device_ids",
+                                    usermsg: data.data
+                                },{
+                                    keyname: "device_id",
+                                    usermsg: data.data[0].device_id
+                                }
+                                ];
+                                setstages(device_id);
+                                window.location.href =golinks("index.html");
+
+                            }
+
+                            //console.log(data);
+                        })
+                            .fail(function () {
+                                console.log("error");
+                            });
+                    }else {
+                        _this.tishidisa=true;
+                        _this.tishi=data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa=false;
+                        },3000);
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },
+
+            retrieval:function () {
+                window.location.href=golinks('lodings/retrievaPasswordl.html')
+            },
+            tellink:function () {
+                window.location.href=golinks('lodings/telregister.html')
+            },
+            meillsignin:function () {
+                window.location.href=golinks('lodings/meillsignin.html')
+            },
+        }
+
+    });
+
+    var datacity = [];
+
+
+
+</script>
+
+</body>
+</html>

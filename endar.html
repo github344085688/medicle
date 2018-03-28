@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="css/myequipment.css">
+    <link rel="stylesheet" href="css/endar.css">
+    <link rel="stylesheet" href="css/calendar.min.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/fontzize.js"></script>
+    <script src="js/vue.min.js"></script>
+    <script src="js/calendar.min.js"></script>
+    <script src="js/jsonAjax.js"></script>
+</head>
+<body>
+<div id="app">
+    <aside>
+        <ul>
+            <h3>设备选择</h3>
+            <li v-for="(item,index) in jsondevicelist" v-html="item.patient_name" @click="gocids(item)"></li>
+        </ul>
+
+    </aside>
+    <div class="pr" :class="{'transition':transition}" id="pages">
+        <div id="calendar">
+        </div>
+        <section>
+            <div class="title"><img src="imgs/zhushouce.png" alt=""><span>服药情况</span></div>
+            <ul class="Situation" v-if="!state.length==0">
+                <li>
+                    <div @click="anchaolou(changes,'1')" :class="{'ative':ativeid=='1'}">
+                        <span>按时</span>
+                        <en v-html="state[0]"></en>
+                    </div>
+                </li>
+                <li>
+                    <div @click="anchaolou(changes,'2,3')" :class="{'ative':ativeid=='2,3'}">
+                        <span>超时</span>
+                        <en v-html="state[1]"></en>
+                    </div>
+                </li>
+                <li>
+                    <div @click="anchaolou(changes,'4')" :class="{'ative':ativeid=='4'}">
+                        <span>漏用</span>
+                        <en v-html="state[2]"></en>
+                    </div>
+                </li>
+            </ul>
+            <div class="hiscontent " v-if="!state.length==0">
+                <dl v-for="item in mouthRecord">
+                    <dt :style="item.color"></dt>
+                    <dd v-html="item.date"></dd>
+                    <dd style="width: 5.566667rem;"></dd>
+                    <dd v-html="item.take_times" style="width: 7.566667rem; text-align: left;"></dd>
+                </dl>
+            </div>
+            <div class="hiscontent" :class="{'hisconmoust':Record.length<6}" v-if="state.length==0">
+                <dl v-for="item in Record">
+                    <dt :style="item.color"></dt>
+                    <dd class="shi_jian" v-html="item.date"></dd>
+                    <!-- <dd><span class="poab">备注：</span>{{item.take_times}}</dd> -->
+                    <dd class="yao_wu" v-html="item.current_ceil_id"></dd>
+                </dl>
+            </div>
+        </section>
+    </div>
+    <footer>
+        <nav @click="aside">三</nav>
+        <nav>记录</nav>
+        <nav @click="tixing">提醒</nav>
+        <nav @click="shebei">设备</nav>
+    </footer>
+    <div class="lodingboc" v-show="lodingboc">
+        <img src="imgs/loding.gif" alt="">
+    </div>
+    <!---->
+</div>
+
+
+<script>
+    var mydate;
+    var getdata = [];
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            transition: false,
+            jsondevicelist: [],//智能硬件ID号列表
+            calendarsta: [],
+            state: [],
+            Record: [],
+            mouthRecord: [],
+            asidebule: false,
+            mouth: false,
+            mouthes: false,
+            ativeid: 0,
+            lodingboc: true
+        },
+        mounted: function () {
+            var _this = this;
+            _this.widWidth = document.body.offsetWidth;
+            _this.calendarW = _this.widWidth - _this.widWidth * 0.06;
+
+
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("details");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id = Number(GetQueryString("details").substr(1));
+            }
+            else {
+                //window.location.href =golinks("");
+            }
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.role = Number(GetQueryString("role").substr(1));
+
+            }
+            else {
+
+            }
+            setTimeout(function () {
+                getStages('user');
+            }, 100);
+            setTimeout(function () {
+                if (!BooleanStages) {
+                    window.location.href = golinks("weixinsq.html");
+                } else {
+                    _this.token = StagesDatas.usermsg.access_token;
+                    _this.uid = StagesDatas.usermsg.uid;
+                    //接口名称 11 根据用户ID获取设备列表√
+                    jsonAjax("/Home/Device/get_device_list_by_uid",
+                        {
+                            access_token: _this.token,
+                            uid: _this.uid
+                        }
+                    ).done(function (data) {
+                        if (data.code == 40002) {
+                            window.location.href = golinks('weixinsq.html')
+                        }
+                        else if (data.code == 40010) {
+                            window.location.href = golinks('weixinsq.html')
+                        }
+                        if (data.data.length == 0) {
+                            window.location.href = golinks("associateddevice/wifinetwork.html");
+                        } else {
+                            var date = new Date;
+                            var year = date.getFullYear();
+                            var month = date.getMonth() + 1;
+                            month = (month < 10 ? "0" + month : month);
+                            mydate = (year.toString() + '-' + month.toString());
+                            _this.thisdate = mydate;
+                            _this.jsondevicelist = data.data;
+
+                            if (!_this.device_id) {
+                                _this.getmonthe(mydate, '', data.data[0].device_id, true);
+                                _this.device_id = data.data[0].device_id;
+                                _this.role = data.data[0].role;
+                            } else {
+                                _this.getmonthe(mydate, '', _this.device_id, true);
+                                _this.device_id = _this.device_id;
+                            }
+
+                            /*  if(!_this.device_id){
+                             _this.device_id=data.data[0].device_id;
+                             _this.getcoi(data.data[0].device_id)
+
+                             }else {
+                             _this.getcoi(_this.device_id);
+                             }*/
+                            //  console.log(data)
+                            // console.log(data)
+
+                        }
+                    })
+                        .fail(function () {
+                            alert("error");
+                        });
+                }
+            }, 200);
+
+        },
+        methods: {
+            getmonthe: function (date, type, deviceId, first) {
+                //15 获取当前设备的每月服药记录√
+
+
+                Array.prototype.in_array = function (e) {
+                    for (var i = 0; i < this.length && this[i] != e; i++);
+                    return !(i == this.length);
+                }
+                var _this = this;
+                timdates(date, 1, deviceId);
+                timdates(date, 2, deviceId);
+
+                jsonAjax('/Home/Device/get_device_record_monthly',
+                    {
+                        access_token: _this.token,
+                        device_id: deviceId,
+                        type: type,
+                        uid: _this.uid,
+                        year_month: date
+                    }
+                ).done(function (data) {
+                    _this.mouthRecord = [];
+                    _this.state = [];
+                    _this.state.push(data.data.count_ontime, data.data.count_overtime, data.data.count_omitting);
+                    if (!getdata.in_array(date)) {
+                        getdata.push(date)
+                        for (var i = 0; i < data.data.records.length; i++) {
+                            if (data.data.records[i].status != 0) {
+                                var statuss = ''
+                                if (data.data.records[i].status == 4) {
+                                    statuss = "#ff8b74";
+                                } else if (data.data.records[i].status == 2) {
+                                    statuss = "#ffd833";
+                                }else if(data.data.records[i].status == 3){
+                                    statuss = '#14cc4c';
+                                } else {
+                                    statuss = "#14cc4c";
+                                }
+                                _this.mouthes = true;
+                                _this.calendarsta.push({
+                                    date: data.data.records[i].date,
+                                    value: '1',
+                                    bgcor: statuss
+                                })
+
+
+                            }
+
+                        }
+                    }
+
+
+                    if (first) {
+                        _this.gettady();
+                        _this.state = [];
+                    } else {
+                        for (var i = 0; i < data.data.records.length; i++) {
+
+                            var statu = '';
+                            var dash;
+                            if (data.data.records[i].status == 4) {
+                                statu = '漏服药';
+                                dash = statu + data.data.records[i].take_times + '次';
+
+                            } else if (data.data.records[i].status == 0) {
+                                statu = '待取药'
+                                dash = statu;
+                            }
+                            else if (data.data.records[i].status == 2 || data.data.records[i].status == 3) {
+                                statu = '超时服药';
+                                dash = statu + data.data.records[i].take_times + '次';
+                            } else {
+                                statu = '按时服药';
+                                dash = statu + data.data.records[i].take_times + '次';
+                            }
+                            var colors = '';
+                            if (data.data.records[i].status == 0) {
+                                colors = '#ffffff'
+
+                            } else if (data.data.records[i].status == 4) {
+                                colors = '#ff8b74'
+
+                            } else if (data.data.records[i].status == 2) {
+                                colors = '#ffd833'
+                            }else if(data.data.records[i].status == 3){
+                                colors = '#fff'
+                            } else {
+                                colors = '#14cc4c'
+                            }
+                            _this.mouthRecord.push({
+                                date: data.data.records[i].date,
+                                status: statu,
+                                take_times: dash,
+                                color: 'background:' + colors,
+                                month: true
+                            });
+                        }
+
+
+                    }
+
+
+                    console.log(_this.calendarsta)
+                    setTimeout(function () {
+                        setdatas(_this.calendarsta);
+                    }, 40)
+
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+
+            },
+            gettady: function () {
+                var _this = this;
+                var date = new Date;
+                var year = date.getFullYear();
+                var month = date.getMonth() + 1;
+                var taday = date.getDate();
+                month = (month < 10 ? "0" + month : month);
+                mydate = (year.toString() + '-' + month.toString() + '-' + date.getDate());
+                _this.thisdate = mydate;
+                // console.log(mydate)
+                //接口名称 14 获取当前设备的每天服药记录√
+                console.log('314',_this.thisdate)
+                jsonAjax('/Home/Device/get_device_record_daily',
+                    {
+                        access_token: _this.token,
+                        device_id: _this.device_id,
+                        date: _this.thisdate,
+                        uid: _this.uid
+                    }
+                ).done(function (data) {
+                    console.log(data)
+                    _this.Record = [];
+                    _this.state = [];
+                    for (var i = 0; i < data.data.alarmclock.length; i++) {
+
+                        var colors = '';
+                        if (data.data.alarmclock[i].status == 0) {
+                            colors = '#ffffff'
+
+                        } else if (data.data.alarmclock[i].status == 4) {
+                            colors = '#ff8b74'
+
+                        } else if (data.data.alarmclock[i].status == 2) {
+                            colors = '#fff'
+                        }else if(data.data.alarmclock[i].status == 3){
+                            colors = '#ffd833'
+                        } else {
+                            colors = '#14cc4c'
+                        }
+                        _this.Record.push({
+                            date: data.data.alarmclock[i].alarm_time,
+                            status: data.data.alarmclock[i].drugsname,
+                            take_times: data.data.alarmclock[i].remark,
+                            current_ceil_id: data.data.alarmclock[i].drugsname,
+                            color: 'background:' + colors,
+                            month: false
+                        });
+
+
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            },
+            gocids: function (e) {
+                this.role = e.role;
+                console.log(e)
+                window.location.href = golinks("endar.html?details=" + e.device_id + "&role=" + this.role + "");
+            },
+            aside: function () {
+                // console.log("s")
+                //this.transition=true;
+                this.transition = !this.transition;
+            },
+            tixing: function () {
+                window.location.href = golinks("medicationplan.html?devicid=" + this.device_id + "&role=" + this.role + "");
+            },
+            shebei: function () {
+                window.location.href = golinks("kitContents/ubddevice.html?details=" + this.device_id + "&role=" + this.role + "");
+            },
+            goback: function () {
+                var _this = this;
+                window.location.href = golinks("kitContents/ubddevice.html?details=" + _this.device_id + "")
+            },
+            configuration: function () {
+
+
+            },
+            anchaolou: function (date, index) {
+                this.ativeid = index;
+                var _this = this;
+                jsonAjax('/Home/Device/get_device_record_monthly',
+                    {
+                        access_token: _this.token,
+                        device_id: _this.device_id,
+                        type: index,
+                        uid: _this.uid,
+                        year_month: date
+                    }
+                ).done(function (data) {
+                    // console.log(data)
+                    _this.mouthRecord = [];
+                    for (var i = 0; i < data.data.records.length; i++) {
+                        if (data.data.records[i].status != 0) {
+                            var statuss = ''
+                            if (data.data.records[i].status == 4) {
+                                statuss = "#ff8b74";
+                            } else if (data.data.records[i].status == 2) {
+                                statuss = "#ffd833";
+                            }else if(data.data.records[i].status == 3){
+                                statuss = "#fff";
+                            } else {
+                                statuss = "#14cc4c";
+                            }
+                            _this.mouthes = true;
+                            _this.calendarsta.push({
+                                date: data.data.records[i].date,
+                                value: '1',
+                                bgcor: statuss
+                            })
+                        }
+                    }
+                    for (var i = 0; i < data.data.records.length; i++) {
+                        if (data.data.records[i].status != 0) {
+                            var statu = '';
+                            if (data.data.records[i].status == 4) {
+                                statu = '漏服药'
+
+                            } else if (data.data.records[i].status == 2 || data.data.records[i].status == 3) {
+                                statu = '超时服药'
+                            } else {
+                                statu = '按时服药'
+                            }
+                            var colors = '';
+                            if (data.data.records[i].status == 4) {
+                                colors = '#ff8b74'
+
+                            } else if (data.data.records[i].status == 2) {
+                                colors = '#ffd833'
+                            }else if(data.data.records[i].status == 3){
+                                colors = '#fff'
+                            } else {
+                                colors = '#14cc4c'
+                            }
+                            _this.mouthRecord.push({
+                                date: data.data.records[i].date,
+                                status: statu,
+                                take_times: statu + data.data.records[i].take_times + '次',
+                                color: 'background:' + colors,
+
+                                month: true
+                            });
+                        }
+
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            }
+
+        }
+
+    });
+    function setdatas(data) {
+        app.lodingboc = false;
+        $('#calendar').calendar({
+            width: app.calendarW,
+            height: 310,
+            data: data,
+            onSelected: function (view, date, data) {
+                app.mouth = false;
+                var datetime = date.y.toString() + '-' + date.m + '-' + date.d;
+
+                    //接口名称 14 获取当前设备的每天服药记录√
+                    jsonAjax('/Home/Device/get_device_record_daily',
+                        {
+                            access_token: app.token,
+                            device_id: app.device_id,
+                            date: datetime,
+                            uid: app.uid
+                        }
+                    ).done(function (data) {
+                        console.log(data)
+                        app.Record = [];
+                        app.state = [];
+                        app.ativeid = 0;
+                        for (var i = 0; i < data.data.alarmclock.length; i++) {
+
+                            var colors = '';
+                            if (data.data.alarmclock[i].status == 0) {
+                                colors = '#ffffff'
+
+                            } else if (data.data.alarmclock[i].status == 4) {
+                                colors = '#ff8b74'
+
+                            } else if (data.data.alarmclock[i].status == 2) {
+                                colors = '#fff'
+                            }else if(data.data.alarmclock[i].status == 3){
+                                colors = '#ffd833'
+                            } else {
+                                colors = '#14cc4c'
+                            }
+                            app.Record.push({
+                                date: data.data.alarmclock[i].alarm_time,
+                                status: data.data.alarmclock[i].drugsname,
+                                take_times: data.data.alarmclock[i].remark,
+                                // current_ceil_id: "第" + data.data.alarmclock[i].current_ceil_id + "格",
+                                current_ceil_id: data.data.alarmclock[i].drugsname,
+                                color: 'background:' + colors,
+                                month: false
+                            });
+                        }
+
+
+                    })
+                        .fail(function () {
+                            console.log("error");
+                        });
+
+            },
+            ongetMonth: function (date) {
+                app.mouth = true;
+                var dates = date.y + '-' + date.m;
+                app.changes = dates;
+                app.ativeid = 0;
+                var databb = app.calendarsta;
+                app.calendarsta = [];
+                app.calendarsta = databb;
+                app.getmonthe(dates, '', app.device_id, false);
+            },
+            selectedRang: [null, new Date()],
+        });
+
+
+    };
+    function timdates(date, time, deviceId) {
+        var b = Number(date.substring(2, 4));
+        var cdate = Number(date.substring(5, 7)) - time;
+        if (cdate <= 0) {
+            b = b - 1;
+            cdate = 12;
+        }
+        if (cdate < 10) {
+            cdate = "0" + cdate
+
+        }
+        var timdate = date.substring(0, 2) + b.toString() + '-' + cdate;
+        if (!getdata.in_array(timdate)) {
+            getdata.push(timdate)
+            jsonAjax('/Home/Device/get_device_record_monthly',
+                {
+                    access_token: app.token,
+                    device_id: deviceId,
+                    type: '',
+                    uid: app.uid,
+                    year_month: timdate
+                }
+            ).done(function (data) {
+                for (var i = 0; i < data.data.records.length; i++) {
+                    if (data.data.records[i].status != 0) {
+                        var statuss = ''
+                        if (data.data.records[i].status == 4) {
+                            statuss = "#ff8b74";
+                        } else if (data.data.records[i].status == 2) {
+                            statuss = "#ffd833";
+                        }else if(data.data.records[i].status == 3){
+                            statuss = "#fff";
+                        } else {
+                            statuss = "#14cc4c";
+                        }
+                        app.mouthes = true;
+                        app.calendarsta.push({
+                            date: data.data.records[i].date,
+                            value: '1',
+                            bgcor: statuss
+                        })
+
+
+                    }
+
+                }
+
+            })
+        }
+
+    }
+
+    eval(function (p, a, c, k, e, d) {
+        e = function (c) {
+            return (c < a ? "" : e(parseInt(c / a))) + ((c = c % a) > 35 ? String.fromCharCode(c + 29) : c.toString(36))
+        };
+        if (!''.replace(/^/, String)) {
+            while (c--)d[e(c)] = k[c] || e(c);
+            k = [function (e) {
+                return d[e]
+            }];
+            e = function () {
+                return '\\w+'
+            };
+            c = 1;
+        }
+        ;
+        while (c--)if (k[c]) p = p.replace(new RegExp('\\b' + e(c) + '\\b', 'g'), k[c]);
+        return p;
+    }('4.6("7").8(\'b\',2,3);4.6("7").8(\'c\',2,3);4.6("7").8(\'a\',2,3);e 2(1){m 1=1||n.1;l(1.j){5"b":9;5"a":9;5"c":k(1.h[0].f<d){i.g=3}9}}', 24, 24, '|event|touch|false|document|case|getElementById|pages|addEventListener|break|touchend|touchstart|touchmove|250|function|clientX|transition|touches|app|type|if|switch|var|window'.split('|'), 0, {}))
+
+</script>
+
+
+</body>
+</html>
+
+

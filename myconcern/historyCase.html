@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,initial-scale=1, maximum-scale=1.0,user-scalable=no" />
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/photoswipe.css">
+    <link rel="stylesheet" href="../css/historyCase.css">
+    <link rel="stylesheet" href="../css/default-skin.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+    <script src="../js/photoswipe.min.js"></script>
+    <script src="../js/photoswipe-ui-default.min.js"></script>
+
+
+</head>
+<body>
+<div id="app">
+    <section>
+        <header>
+            <nav @click="goback"><img src="../imgs/arrow_left.png"></nav>
+            <nav><span v-if="datas[0]">{{datas[0].patient_name}}</span>{{Presentext}}</nav>
+            <nav @click="addnew" v-if="detarole==1">添加</nav>
+        </header>
+
+        <div class="caseimg_box"  v-for="(item , index) in datasul">
+            <div class="tingOrdel">
+                <span>{{item.upload_datetime}}</span>
+                <span @click="deleteImg(item,index)" v-html="item.delimgename" v-if="detarole==1"></span>
+            </div>
+            <ul>
+                <li v-for="(msg,index) in item.img" class="img">
+                    <img :src="msg.imgurl" @click="PhotoSwipeopen(msg.imgurl,item,$event,index)">
+                    <div class="del" v-if="msg.delimges">
+                        <img src="../imgs/delete_del.png" @click="fileDel(item,msg,index)"/>
+                    </div>
+                </li>
+                <li class="add"@click="addmore(item)" v-if="detarole==1"><img src="../imgs/add.png"></li>
+
+            </ul>
+
+        </div>
+    </section>
+    <div class="popuparticle" v-html="tishi" v-if="tishidisa"></div>
+</div>
+
+
+
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            datas: [],
+            datasul: [],
+            mockindex:0,
+            Presentext:'',
+            imglist:[ /*{
+             src:"http://cdn.zayata.com/Uploads/Picture/2017-10-17/59e576585929f.jpg",
+             w:event.path[2].getElementsByClassName('img')[i].firstChild.naturalWidth,
+             h:event.path[2].getElementsByClassName('img')[i].firstChild.naturalHeight,
+             index:i
+
+             };*/
+            ],
+            detarole:0,
+           delimges:false,
+           tishi:'',
+           tishidisa:false
+
+
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("cid");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.detaCid = Number(GetQueryString("cid").substr(1));
+            }
+            else {
+
+            }
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.detarole = Number(GetQueryString("role").substr(1));
+                console.log(_this.detarole)
+            }
+            else {
+
+            }
+            var uploadtype = GetQueryString("uploadtype");
+            if (uploadtype != null && uploadtype.toString().length > 1) {
+                _this.gettype = Number(GetQueryString("uploadtype").substr(1));
+                if(_this.gettype==1){
+                    _this.Presentext='病例报告'
+                }if(_this.gettype==2){
+                    _this.Presentext='体检报告'
+                }
+            }
+            else {
+
+            }
+
+            setTimeout(function () {
+                getStages('user');
+            },50);
+            setTimeout(function () {
+                console.log(StagesDatas)
+                _this.token = StagesDatas.usermsg.access_token;
+                _this.uid = StagesDatas.usermsg.uid;
+                if (_this.token == null && _this.uid == null) {
+                    window.location.href = golinks("");
+                }
+
+
+                jsonAjax("/Home/User/get_patient_records",{
+                    access_token: _this.token,
+                    cid:_this.detaCid,
+                    type:_this.gettype,
+                    uid: _this.uid
+                }).done(function (data) {
+                    console.log("sss")
+                    console.log(data.data)
+                    if (data.code ==0) {
+                        _this.datas=data.data;
+                        _this.datasul=data.data[0].records;
+                        for(var i=0;i<_this.datasul.length;i++){
+                            _this.datasul[i].delimgename="删除";
+                            _this.datasul[i].delimges=false;
+                            for(var j=0;j<_this.datasul[i].img.length;j++){
+                                _this.datasul[i].img[j].delimges=false;
+                            }
+                        }
+
+                        console.log( _this.datas)
+
+
+                        _this.mock=1;
+                        if(data.data[0].records.length==0){
+                            _this.mock=0;
+                            window.location.href=golinks("myconcern/uploadimg.html?cid="+_this.detaCid+"&record_id=none&uploadtype="+_this.gettype+"&role="+_this.detarole+"")
+                        }
+                    }
+                    else {
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            },100);
+            var html='<div class="pswp"tabindex="-1"role="dialog"aria-hidden="true"><div class="pswp__bg"></div><div class="pswp__scroll-wrap"><div class="pswp__container"><div class="pswp__item"></div><div class="pswp__item"></div><div class="pswp__item"></div></div><div class="pswp__ui pswp__ui--hidden"><div class="pswp__top-bar"><div class="pswp__counter"></div><button class="pswp__button pswp__button--close"title="Close (Esc)"></button><button class="pswp__button pswp__button--share"title="Share"style="display: none;"></button><button class="pswp__button pswp__button--fs"title="Toggle fullscreen"style="display: none;"></button><button class="pswp__button pswp__button--zoom"title="Zoom in/out"style="display: none;"></button><!--Preloader demo https:<!--element will get class pswp__preloader--active when preloader is running--><div class="pswp__preloader"><div class="pswp__preloader__icn"><div class="pswp__preloader__cut"><div class="pswp__preloader__donut"></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class="pswp__share-tooltip"></div></div><button class="pswp__button pswp__button--arrow--left"title="Previous (arrow left)"></button><button class="pswp__button pswp__button--arrow--right"title="Next (arrow right)"></button><div class="pswp__caption"><div class="pswp__caption__center"></div></div></div></div></div>';
+            document.write(html);
+        },
+        methods: {
+            addmore:function (item) {
+                window.location.href=golinks("myconcern/uploadimg.html?cid="+this.detaCid+"&record_id="+item.record_id+"&uploadtype="+this.gettype+"&role="+this.detarole+"")
+            },
+            addnew:function () {
+                window.location.href= golinks("myconcern/uploadimg.html?cid="+this.detaCid+"&record_id=none&uploadtype="+this.gettype+"&role="+this.detarole+"")
+            },
+            deleteImg:function(item,index){
+                //13 删除服药人的病例或体检报告 / 根据报告ID删除报告图片√
+                var _this=this;
+                console.log(item.delimges)
+
+                if(!item.delimges){
+                    item.delimgename="取消";
+                    for(var j=0;j<item.img.length;j++){
+                        item.img[j].delimges=true;
+                    }
+                }else {
+                    item.delimgename="删除";
+                    for(var j=0;j<item.img.length;j++){
+                        item.img[j].delimges=false;
+                    }
+                }
+                item.delimges=!item.delimges;
+                console.log(_this.datasul)
+                var d=_this.datasul;
+                _this.datasul=[];
+                _this.datasul= d;
+
+            },
+            fileDel:function (item,smg,index) {
+                console.log("item")
+                console.log(item.record_id)
+                console.log(smg)
+                console.log(index)
+                console.log(this.datasul)
+                item.img.splice(index,1);
+                if(item.img.length==0){
+                    var b=[];
+                    for(var i=0;i<this.datasul.length;i++){
+                        b.push(this.datasul[i].record_id);
+                    }
+                     var index=b.indexOf(item.record_id);
+                     this.datasul.splice(index,1);
+
+                }
+                var _this=this;
+                //接口名称 13 删除服药人的病例或体检报告 / 根据报告ID删除报告图片√
+                jsonAjax("/Home/User/del_patient_record",{
+                 access_token: _this.token,
+                 img_ids:smg.img_id,
+                 record_id:item.record_id,
+                 uid: _this.uid
+                 }).done(function (data) {
+                 if (data.code ==0) {
+
+                 }
+                 else {
+                 }
+                 }).fail(function () {
+                 console.log("error");
+                 });
+
+            },
+            PhotoSwipeopen:function(item,list,event,index){
+                var puput=[]
+                for(var i=0;i<list.img.length;i++){
+                    var img_url = list.img[i].imgurl;
+                    var img = new Image();
+                    img.src = img_url;
+                    console.log(img.width)
+                    puput.push({
+                        src:list.img[i].imgurl,
+                        w:img.width,
+                        h:img.height,
+                        index:i
+
+                    });
+                }
+                openPhotoSwipe(puput,index);
+            },
+            goback: function () {
+                window.location.href= golinks("myconcern/caseReport.html?cid="+this.detaCid+"&uploadtype="+this.gettype+"&role="+this.detarole+"");
+            }
+
+        }
+
+    });
+
+</script>
+</body>
+
+</html>

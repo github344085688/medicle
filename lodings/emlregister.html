@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/choice.js"></script>
+    <link href="../css/choice.min.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/telregister.css" rel="stylesheet" type="text/css"/>
+    <script src="../js/jsonAjax.js"></script>
+</head>
+<body>
+<div id="app">
+    <div class="centheader">
+        <div @click="telregister">手机号</div>
+        <div class="active">邮箱</div>
+    </div>
+    <section>
+        <div class="logo"><img src="../imgs/logo.png"/>
+        </div>
+        <dl>
+            <dd class="cent"><input type="text" placeholder="请输入邮箱" v-model="username"></dd>
+        </dl>
+        <dl>
+            <dt><input type="text" placeholder="请验证码" v-model="Code"></dt>
+            <dd class="lef"><input @click="authentication" type="button" v-model="Counttex" :disabled="disabledSty":class="{disabled:!disabledSty}"></dd>
+        </dl>
+        <dl>
+            <dd class="cent"><input type="password" placeholder="请输6-20位密码" v-model="password" onkeyup="value=value.replace(/[, ]/g,'') "></dd>
+        </dl>
+        <input class="signin" type="button" @click="Submit" value="绑定" :disabled="disableSubmit"
+               :class="{signinup:!disableSubmit}">
+    </section>
+    <div class="popuparticle" v-html="tishi" v-if="tishidisa"></div>
+</div>
+
+
+<script>
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            Code: '',
+            username: '',
+            password: '',
+            miandroff:false,
+            type: 0,
+            Counttex: '获取验证码',
+            disabledSty: true,
+            tishidisa: false,
+            usernameSty: false,
+            disabledCode:false,
+            tishi: ""
+
+        },
+        mounted:function () {
+            var _this = this;
+            setTimeout(function(){
+                getStages('weixin');
+            },120);
+            setTimeout(function(){
+                _this.weixindata=StagesDatas;
+            },320);
+        },
+        watch: {
+            username: function (val, oldVal) {
+                var eml = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+                if (eml.test(val)) {
+                    this.disabledSty = false;
+                    this.usernameSty = true;
+                    console.log('false')
+                } else {
+                    this.disabledSty = true;
+                    this.usernameSty = false;
+                    console.log('true')
+                }
+
+            },
+            Code: function (val, oldVal) {
+                if(val.length >4){
+                    this.disabledCode = true;
+                } else {
+                    this.disabledCode = false;
+                }
+            }
+        },
+        computed: {
+            disableSubmit: function () {
+             /*   if(this.usernameSty==true&&this.Code.length>0&&this.password.length>5&&this.password.length<21){
+                    return false;
+                }else {
+                    return true;
+                }*/
+
+                if (this.usernameSty == false||this.disabledCode == false || this.password.length<6 ||this.password.length>20) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+        },
+        methods: {
+            authentication: function () {
+                var _this = this;
+                _this.disabledSty = true;
+                this.Count = 60;
+                _this.Counttex = "重发(" + _this.Count + ")";
+                var settime = setInterval(function () {
+                    _this.Count--;
+                    _this.Counttex = "重发(" + _this.Count + ")";
+                    if (_this.Count < 1) {
+                        _this.disabledSty = false;
+                        _this.Counttex = "重发";
+                        clearInterval(settime);
+                    }
+                }, 1000);
+                //02 发送验证码√
+                jsonAjax("/Home/User/sendsafecode",
+                    {
+                        country_code: '',
+                        type: 2,
+                        username: _this.username,
+                        usertype: 1
+                    }
+                ).done(function (data) {
+                    console.log(data)
+                    if (data.code == 0) {
+                        _this.tishidisa = true;
+                        _this.tishi = "验证码已发送";
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                    } else if (data.msg == "邮箱被占用") {
+                        _this.tishidisa = true;
+                        _this.tishi = "邮箱被占用";
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                        _this.Counttex = "获取验证码";
+                        clearInterval(settime);
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },
+            Submit: function () {
+                var _this = this;
+                //接口名称 23 微信授权信息注册并绑定本站用户
+                jsonAjax("/Home/User/wx_register_bind",
+                    {
+                        city: _this.weixindata.usermsg.city,
+                        country: _this.weixindata.usermsg.country,
+                        country_code: _this.countryCode,
+                        headimgurl: _this.weixindata.usermsg.headimgurl,
+                        nickname: _this.weixindata.usermsg.nickname,
+                        openid: _this.weixindata.usermsg.openid,
+                        password: _this.password,
+                        province: _this.weixindata.usermsg.province,
+                        repassword: _this.password,
+                        safecode: _this.Code,
+                        sex: _this.weixindata.usermsg.sex,
+                        type: 2,
+                        unionid: _this.weixindata.usermsg.unionid,
+                        username: _this.username
+                    }
+                ).done(function (data) {
+                    console.log(data);
+                    console.log(data);
+                    console.log(data);
+                    if (data.code == 0) {
+                        _this.tishidisa = true;
+                        _this.tishi =data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                        console.log(data);
+                        _this.asynchronous(data.data.access_token, data.data.uid)
+                    }
+                    else {
+                        _this.tishidisa = true;
+                        _this.tishi =data.msg;
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 3000);
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },
+            asynchronous: function (token, uid) {
+                var _this = this;
+                //11 根据用户ID获取设备列表√
+                jsonAjax("/Home/Device/get_device_list_by_uid/Home/User/api_login",
+                    {
+                        access_token: token,
+                        uid: uid
+                    }
+                ).done(function (data) {
+                    if (data.code ==0) {
+                        if (data.data.length == 0) {
+                            window.location.href = golinks("associateddevice/wifinetwork.html");
+                        } else {
+
+                        }
+                    } else if (data.code ==0) {
+                        var device_id =[{
+                            keyname: "device_ids",
+                            usermsg: data.data
+                        },{
+                            keyname: "device_id",
+                            usermsg: data.data[0].device_id
+                        }
+                        ];
+                        setstages(device_id);
+                        window.location.href = golinks("medicationplan.html");
+                    }
+                    console.log(data);
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            },
+            telregister: function () {
+                window.location.href = golinks('lodings/telregister.html')
+            },
+
+        }
+
+    });
+
+
+</script>
+</body>
+</html>

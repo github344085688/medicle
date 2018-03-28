@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/choice.js"></script>
+    <link href="../css/choice.min.css" rel="stylesheet" type="text/css"/>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/jstz-1.0.4.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+    <link rel="stylesheet" href="../css/adddevice.css">
+
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav @click="goback()"><img src="../imgs/arrow_left.png"></nav>
+        <nav>新增设备</nav>
+        <nav></nav>
+    </header>
+    <section>
+        <article>
+            <dl>
+                <dt>设备</dt>
+                <dd v-if="newdevice" v-html="newdevice.device_name"></dd>
+            </dl>
+            <dl>
+                <dt>设备名称</dt>
+                <dd><input type="text" v-model="deviceName"></dd>
+            </dl>
+
+        </article>
+        <article>
+            选择已有标签:
+            <div class="sole">
+                <aside>
+                    <div v-for="(item, index) in Bindlist" @click="setBindlist(item,index)">
+                        <span v-html="item.patient_name" :class="{bodercolor:index==indexclass}"></span>
+                    </div>
+                </aside>
+            </div>
+            <ul class="addjiaren" @click="addmyfminly(device)">
+                <li>新添家人</li>
+                <li class="ddli"><img src="../imgs/arrow_right.png" alt=""></li>
+            </ul>
+        </article>
+        <div class="input_box">
+            <input type="button" class="next" :class="{disableds:disabled}" value="下一步" @click="Submit"
+                   :disabled="disabled">
+        </div>
+    </section>
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+           // disabled: true,
+            newdevice: {},//智能硬件
+            deviceName: '',//设备名称
+            birthday: '',//出生年月
+            User: '',
+            Gender: ['未知', '男', '女'],
+            setchang: 0,//性别
+            Bindlist: {},
+            cidId: '',
+            HistorPat: [],
+            timezone:'',
+            region:'',
+            language:'',
+            indexclass:{
+
+            },
+            stages:0,
+            device:""
+
+        },
+
+        mounted: function () {
+
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("device");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device = (GetQueryString("device").substr(1));
+            }
+            else {
+
+            }
+            var is_skip = GetQueryString("is_skip");
+            if (is_skip != null && is_skip.toString().length > 1) {
+                _this.is_skip = (GetQueryString("is_skip").substr(1));
+            }
+            else {
+
+            }
+            console.log(this.device);
+            var today = new Date().getTimezoneOffset()/60;
+            _this.timezone="GMT+0"+(-today)+":00";
+            _this.region=jstz.determine().name();
+            setTimeout(function () {
+                getStages('user');
+            },60);
+            setTimeout(function () {
+                if(!BooleanStages){
+                    window.location.href=golinks("weixinsq.html");
+                }else {
+                    _this.token = StagesDatas.usermsg.access_token;
+                    _this.uid = StagesDatas.usermsg.uid;
+                    _this.languages = StagesDatas.languages;
+                    //15 根据UID获取服药人信息√
+                    jsonAjax('/Home/User/get_patient_info_by_uid',
+                        {
+                            access_token: _this.token,
+                            uid: _this.uid
+                        }
+                    ).done(function (data) {
+                        console.log("000000000000000")
+                        console.log(data)
+                        if (data.code == 0) {
+                            if(data.data.length!=0){
+                                _this.Bindlist = data.data;
+                                console.log(_this.Bindlist)
+                                for (var i = 0; i < data.data.length; i++) {
+                                    _this.HistorPat.push(data.data[i].patient_name);
+                                }
+                            }else {
+                                window.location.href=golinks("personaldata/addperson.html?addjr=1&device="+_this.device+"");
+                            }
+                        }
+                    })
+                        .fail(function () {
+                            console.log("error");
+                        });
+                    getStages('newdevice');
+                }
+            },300);
+            setTimeout(function () {
+                console.log("ssssssssssssss")
+                console.log(BooleanStages)
+                if(!BooleanStages){
+                    window.location.href=golinks("weixinsq.html");
+                }else {
+                    console.log(StagesDatas)
+                    _this.newdevice = StagesDatas.data;
+                }
+            },450);
+        },
+        watch: {
+            User: function (val, oldVal) {
+                if (!this.contains(this.HistorPat, val)) {
+                    this.cidId = '';
+                } else {
+
+                }
+            }
+
+        },
+        computed:{
+            disabled: function () {
+                if(this.stages==0||this.deviceName==''){
+                    return true;
+                } else {
+                    return false;
+                }
+
+                
+            }
+        },
+        methods: {
+              contains: function (arr, obj) {
+                var i = arr.length;
+                while (i--) {
+                    if (arr[i] === obj) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            setBindlist: function (item, index) {
+                console.log(item);
+                var _this = this;
+                _this.cidId = item.cid;
+                _this.User = item.patient_name;
+                _this.setchang = item.sex;
+                _this.birthday = item.birthday;
+                _this.indexclass=index;
+                _this.stages=1;
+                console.log(_this.cidId);
+
+            },
+            Submit: function () {
+                var _this = this;
+                console.log(_this.deviceName);
+                console.log(_this.User);
+                console.log(_this.cidId);
+                console.log(_this.HistorPat);
+                console.log(_this.timezone);
+                console.log(_this.region);
+                console.log(_this.language);
+                //02 当前用户绑定设备√
+                jsonAjax('/Home/Device/bundle_device',
+                    {
+                        access_token:_this.token,
+                        language:_this.language,
+                        product_sn: _this.newdevice.product_sn,
+                        time_zone_district: _this.region,
+                        time_zone_str: _this.timezone,
+                        uid:_this.uid,
+                    }
+                ).done(function (data) {
+
+
+                    var deviceid=data.data.device_id;
+                    if(data.code ==0){
+                        //03 新增或编辑设备基本信息和服药人信息√
+                        jsonAjax('/Home/Device/handle_device_member_new',
+                            {
+                                access_token:_this.token,
+                                uid:_this.uid,
+                                birthday: _this.uid,
+                                cid: _this.cidId,
+                                device_id: data.data.device_id,
+                                my_device_name:_this.deviceName,
+                                patient_name: _this.User,
+                                sex: _this.setchang
+                            }
+                        ).done(function (data) {
+                            if(data.code ==0) {
+                                if(_this.is_skip==1){
+                                    window.location.href=golinks("dmanagement/eqconfiguration.html?device_id="+deviceid+"");
+                                }else {
+                                    window.location.href=golinks("");
+                                }
+
+                            }
+                        })
+                            .fail(function () {
+                                console.log("error");
+                            });
+
+                    }
+
+
+                 })
+                 .fail(function () {
+                 console.log("error");
+                 });
+            },
+            addmyfminly: function (device) {
+                console.log(this.device);
+
+                window.location.href=golinks("personaldata/addperson.html?addjr=1&device="+this.device+"");
+            },
+
+            goback: function () {
+                var _this = this;
+                window.location.href =golinks('associateddevice/wifinetwork.html');
+            },
+        }
+
+
+    });
+
+    $('#Sexselection').choice().number({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        minWidth: 300,
+        layout: 'fixed',
+        wheels: [
+            [{
+                data: [{
+                    value: 0,
+                    display: '未知'
+                }, {
+                    value: 1,
+                    display: '男'
+                }, {
+                    value: 2,
+                    display: '女'
+                }]
+            }]
+        ],
+        onSet: function (event, inst) {
+            console.log(inst._value.substring(0, 1));
+            app.setchang = inst._value.substring(0, 1);
+
+        }
+    });
+
+
+    var now = new Date(),
+        max = new Date(now.getFullYear() - 70, now.getMonth(), now.getDate());
+    $('#Remindertime').choice().date({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        min: max,
+        onSet: function (event, inst) {
+            app.birthday = inst._value;
+            console.log(inst._value)
+
+        }
+    });
+</script>
+</body>
+
+</html>
+

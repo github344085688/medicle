@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/deviceinfor.css">
+    <link rel="stylesheet" href="../css/calibrationtime.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/choice.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+    <link href="../css/choice.min.css" rel="stylesheet" type="text/css"/>
+
+    <style>
+
+        .mbsc-control {
+            width: 40%;
+            text-align: right;
+            border-radius: 6px;
+            border: none;
+            outline: none;
+            color: #9d9d9d;
+        }
+
+        .mbsc-comp {
+            color: #9d9d9d;
+        }
+
+        select::-ms-expand {
+            display: none;
+        }
+        .pps{padding-right: 1.5rem}
+
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav @click="goback"><img src="../imgs/arrow_left.png"></nav>
+        <nav>参数设置</nav>
+        <nav></nav>
+    </header>
+    <section>
+        <dl v-show="indexof('1002')">
+            <dd>日期格式</dd>
+            <dd>
+                <select name="Kit"  class="Date" style="border: none ; appearance:none;
+      -moz-appearance:none;text-align: right;
+      -webkit-appearance:none; " v-if="role!=2">
+                    <option v-for="(item,index) in jsondata" :value="index" :selected="index==datas.date_format"
+                            v-html="item,index">
+                    </option>
+                </select>
+                <span v-if="role==2" >{{jsondata[datas.date_format]}}</span>
+                <img src="../imgs/arrow_right.png" v-if="role!=2">
+            </dd>
+
+        </dl>
+        <dl v-show="indexof('1003')">
+            <dd>时间格式</dd>
+            <dd>
+                <select id="time" style="border: none; appearance:none;
+      -moz-appearance:none;text-align: right;
+      -webkit-appearance:none; " v-if="role!=2">
+                    <option v-for="(item,index) in jsontime" :value="index" :selected="index==datas.time_format"
+                            v-html="item">
+                    </option>
+                </select>
+                <span v-if="role==2" >{{jsontime[datas.time_format]}}</span>
+                <img src="../imgs/arrow_right.png" v-if="role!=2"></dd>
+        </dl>
+        <dl v-show="indexof('1013')">
+            <dd>音量调节</dd>
+            <dd>
+                <select id="bolune" style="border: none; appearance:none;
+      -moz-appearance:none;text-align: right;
+      -webkit-appearance:none; " v-if="role!=2">
+                    <option v-for="(item,index) in bolunenu" :value="index" :selected="index==datas.alarm_voice"
+                            v-html="item">
+                    </option>
+                </select>
+                <span v-if="role==2" >{{bolunenu[datas.alarm_voice]}}</span>
+                <img src="../imgs/arrow_right.png" v-if="role!=2"></dd>
+        </dl>
+        <dl v-show="indexof('1001')">
+            <dd>语言设置</dd>
+            <dd>
+                <select id="lenguler" style="border: none;
+ appearance:none; text-align: right;
+      -moz-appearance:none;
+      -webkit-appearance:none; " v-if="role!=2">
+                    <option v-for="(item,index) in lengulerenu" :value="index" :selected="index==datas.language"
+                            v-html="item">
+                    </option>
+                </select>
+                <span v-if="role==2" >{{lengulerenu[datas.language]}}</span>
+                <img src="../imgs/arrow_right.png" v-if="role!=2"></dd>
+        </dl>
+        <dl v-show="indexof('1017')">
+            <dd>超时提醒</dd>
+            <dd v-if="role!=2"><input id="Remindertime" style="text-align: right ; border: none"
+                                      v-model="datas.time_out"/><img src="../imgs/arrow_right.png"/></dd>
+            <dd v-if="role==2" >{{datas.time_out}}</dd>
+        </dl>
+        <dl v-show="indexof('1018')">
+            <dd>漏用提醒</dd>
+            <dd v-if="role!=2"><input id="Remindertimes" style="text-align: right;border: none"
+                                      v-model="datas.omitting"/><img src="../imgs/arrow_right.png"/></dd>
+            <dd v-if="role==2" >{{datas.omitting}}</dd>
+        </dl>
+
+        <dl :class="{'dls':miandroff==true}" v-show="indexof('1051')">
+            <dd>免打扰模式</dd>
+            <dd>
+                <div class="switchbox">
+                    <div class="switch" @click="miandrmsonoff()">
+                        <div class="bagcol " :class="{ bgopen:miandrmsoff==1}"></div>
+                        <div class="open" :class="{ openright:miandrmsoff==1}"></div>
+                    </div>
+                </div>
+            </dd>
+        </dl>
+        <dl :class="{'dls':miandroff==true}" v-show="indexof('1052')">
+            <dd>开始时间</dd>
+            <dd class="color">
+                <div v-show="role!=2&&miandrmsoff==1">
+                    <input type="text" class="datddlbg" id="stendatatime" :placeholder="unfazed.unfazed_start">
+                </div>
+                <div v-show="role==2||miandrmsoff!=1" :class="{pps:role!=2}" >{{unfazed.unfazed_start}}</div>
+            </dd>
+        </dl><!--v-show="miandrmsoff==1"-->
+        <dl :class="{'dls':miandroff==true}" v-show="indexof('1054')">
+            <dd>结束时间</dd>
+            <dd class="color">
+                <div v-show="role!=2&&miandrmsoff==1">
+                    <input type="text" class="datddlbg" id="enddatatime":placeholder="unfazed.unfazed_end">
+                </div>
+                <div v-show="role==2||miandrmsoff!=1" :class="{pps:role!=2}" >{{unfazed.unfazed_end}}</div>
+            </dd>
+        </dl>
+
+    </section>
+
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            role: 0,
+            miandrmsoff: 0,
+            miandroff: false,
+            miandrmsoff: 0,
+            unfazed: {},
+            datas: {},
+            jsondata: [
+                '年/月/日',
+                '日/月/年',
+                '月/日/年'
+            ],
+            jsontime: [
+                '24小时',
+                '12小时'
+            ],
+            bolunenu: [
+                '大',
+                '中',
+                '小',
+                '静音'
+            ],
+            lengulerenu: [
+                '中文',
+                '英文'
+            ],
+            dataindex: null,
+            timeindex: null,
+            device_id: null,
+            showdash:[]
+
+
+        },
+
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("device_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id = Number(GetQueryString("device_id").substr(1));
+            }
+            else {
+
+            }
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.role = Number(GetQueryString("role").substr(1));
+            }
+            else {
+                window.location.href = golinks("");
+            }
+            var token = GetQueryString("token");
+            if (token != null && role.toString().length > 1) {
+                _this.token = GetQueryString("token").substr(1);
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var uid = GetQueryString("uid");
+            if (uid != null && role.toString().length > 1) {
+                _this.uid = Number(GetQueryString("uid").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            _this.dtcs(_this.device_id)
+            jsonAjax('Home/Device/device_params',
+                {
+                    access_token: _this.token,
+                    alarm_voice: '',
+                    date_format: '',
+                    device_id: _this.device_id,
+                    language: '',
+                    omitting: '',
+                    time_format: '',
+                    time_out: '',
+                    uid: _this.uid
+                }
+            ).done(function (data) {
+                if (data.code == 40002) {
+                    //  window.location.href=golinks('weixinsq.html')
+                }
+                else if (data.code == 40010) {
+                    // window.location.href=golinks('weixinsq.html')
+                }
+                else if (data.code == 0) {
+                    console.log(data)
+                    console.log(data)
+                    console.log(data)
+                    console.log(data)
+                    _this.datas = data.data;
+                    _this.unfazed = data.data;
+                    _this.miandrmsoff = Number(data.data.unfazed_switch)
+                    getStages('device_ids');
+                }
+
+
+            })
+                .fail(function () {
+                    console.log("error");
+                });
+
+
+            /* */
+        },
+        methods: {
+            dtcs:function (e) {
+                var _this=this;
+                jsonAjax('/Home/Device/dynamic_device_params',
+                    {access_token:this.token,device_id:e, uid:this.uid}
+                ).done(function (data) {
+                    console.log(data.data)
+                    for(var i in data.data){
+                        _this.showdash.push(data.data[i].tag)
+                    }
+
+                });
+            },
+            indexof:function (item) {
+                if(this.showdash.indexOf(item)==-1){
+                    return false;
+                }else {
+                    return true;
+                }
+            },
+            medicationplan: function () {
+                console.log(StagesDatas)
+                var lisdata = StagesDatas.usermsg;
+                var lisarry = [];
+                for (var i = 0; i < lisdata.length; i++) {
+                    lisarry.push(Number(lisdata[i].device_id));
+                }
+                var index = lisarry.indexOf(this.device_id);
+                // window.location.href= golinks("medicationplan.html?devicid="+index+"");
+            },
+            miandrmsonoff: function () {
+                var _this = this;
+                if(_this.role!=2){
+                    this.miandrmsoff = !this.miandrmsoff;
+                    this.miandrswitch = !this.miandrswitch;
+                    console.log(this.miandrswitch)
+                    var offon;
+                    if (!this.miandrmsoff) {
+                        offon = 0
+                    } else {
+                        offon = 1
+                    }
+                    console.log(offon)
+                    console.log(this.miandrmsoff)
+                    jsonAjax('/Home/Device/device_params',
+                        {
+                            access_token: _this.token,
+                            device_id: _this.device_id,
+                            uid: _this.uid,
+                            unfazed_start: _this.unfazed.unfazed_start,
+                            unfazed_end: _this.unfazed.unfazed_end,
+                            unfazed_switch: offon,
+                        }
+                    ).done(function (data) {
+                        console.log(data)
+                        _this.titletime = true;
+                        _this.datatime = data.msg;
+                        setTimeout(function () {
+                            _this.titletime = false;
+                        }, 1200)
+                        _this.miandrswitch = Number(data.data.unfazed_switch);
+                        // app.unfazed_end=inst._value;
+
+                    })
+                        .fail(function () {
+                            console.log("error");
+                        });
+                }else {
+
+                }
+
+
+            },
+            goback: function () {
+                console.log(this.dataindex);
+                window.location.href = golinks("dmanagement/devicedetails.html?token=" + this.token + "&uid=" + this.uid + "&device_id=" + this.device_id + "&role=" + this.role + "&off=1");
+            },
+            configuration: function () {
+
+            }
+
+        }
+
+    });
+    setTimeout(function () {
+        $('.Date').choice().select({
+            theme: 'ios',
+            lang: 'zh',
+            display: 'bottom',
+            minWidth: 200,
+            onSet: function (event, inst) {
+                console.log(inst._wheelArray[0])
+
+                //06 设置日期格式参数√
+                jsonAjax('Home/Device/device_params',
+                    {
+                        access_token: app.token,
+                        alarm_voice: '',
+                        date_format: inst._wheelArray[0],
+                        device_id: app.device_id,
+                        language: '',
+                        omitting: '',
+                        time_format: '',
+                        time_out: '',
+                        uid: app.uid
+                    }
+                ).done(function (data) {
+                    console.log(data)
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            }
+
+        });
+        $('#time').choice().select({
+            theme: 'ios',
+            lang: 'zh',
+            display: 'bottom',
+            minWidth: 200,
+            onSet: function (event, inst) {
+                console.log(inst._wheelArray[0])
+                jsonAjax('Home/Device/device_params',
+                    {
+                        access_token: app.token,
+                        alarm_voice: '',
+                        date_format: '',
+                        device_id: app.device_id,
+                        language: '',
+                        omitting: '',
+                        time_format: inst._wheelArray[0],
+                        time_out: '',
+                        uid: app.uid
+                    }
+                ).done(function (data) {
+
+                    console.log(data)
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+
+            }
+
+        });
+
+        $('#bolune').choice().select({
+            theme: 'ios',
+            lang: 'zh',
+            display: 'bottom',
+            minWidth: 200,
+            onSet: function (event, inst) {
+                console.log(inst._wheelArray[0])
+                jsonAjax('Home/Device/device_params',
+                    {
+                        access_token: app.token,
+                        alarm_voice: inst._wheelArray[0],
+                        date_format: '',
+                        device_id: app.device_id,
+                        language: '',
+                        omitting: '',
+                        time_format: '',
+                        time_out: '',
+                        uid: app.uid
+                    }
+                ).done(function (data) {
+
+                    console.log(data)
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+
+            }
+
+        });
+        $('#lenguler').choice().select({
+            theme: 'ios',
+            lang: 'zh',
+            display: 'bottom',
+            minWidth: 200,
+            onSet: function (event, inst) {
+                console.log(inst._wheelArray[0])
+                jsonAjax('Home/Device/device_params',
+                    {
+                        access_token: app.token,
+                        alarm_voice: '',
+                        date_format: '',
+                        device_id: app.device_id,
+                        language: inst._wheelArray[0],
+                        omitting: '',
+                        time_format: '',
+                        time_out: '',
+                        uid: app.uid
+                    }
+                ).done(function (data) {
+
+                    console.log(data)
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+
+            }
+
+        });
+        var wheel = [
+            [{data: ['00', '01']}, {data: ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60']}]
+        ];
+        $('#Remindertime').choice().scroller({
+            theme: 'ios',
+            lang: 'zh',
+            display: 'bottom',
+            wheels: wheel,
+            minWidth: 200,
+            onSet: function (event, inst) {
+                var number = inst._wheelArray[0] + ":" + inst._wheelArray[1]
+                jsonAjax('Home/Device/device_params',
+                    {
+                        access_token: app.token,
+                        alarm_voice: '',
+                        date_format: '',
+                        device_id: app.device_id,
+                        language: '',
+                        omitting: '',
+                        time_format: '',
+                        time_out: number,
+                        uid: app.uid
+                    }
+                ).done(function (data) {
+
+                    console.log(data)
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            }
+        });
+
+
+        $('#Remindertimes').choice().scroller({
+            theme: 'ios',
+            lang: 'zh',
+            display: 'bottom',
+            wheels: wheel,
+            minWidth: 200,
+            onSet: function (event, inst) {
+                var number = inst._wheelArray[0] + ":" + inst._wheelArray[1]
+                jsonAjax('Home/Device/device_params',
+                    {
+                        access_token: app.token,
+                        alarm_voice: '',
+                        date_format: '',
+                        device_id: app.device_id,
+                        language: '',
+                        omitting: number,
+                        time_format: '',
+                        time_out: '',
+                        uid: app.uid
+                    }
+                ).done(function (data) {
+
+                    console.log(data)
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            }
+        });
+    }, 600);
+    var now = new Date(),
+        min = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var currYear = (new Date()).getFullYear();
+    $('#stendatatime').choice().time({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        wheelOrder: 'hhii',
+        timeFormat: 'HH:ii',
+        timeWheels: 'HHii',
+        minWidth: 200,
+        onSet: function (event, inst) {
+            console.log(inst._value)
+            jsonAjax('/Home/Device/device_params',
+                {
+                    access_token: app.token,
+                    device_id: app.device_id,
+                    uid: app.uid,
+                    unfazed_start: inst._value,
+                    unfazed_end: app.unfazed_end,
+                    unfazed_switch: 1,
+
+                }
+            ).done(function (data) {
+                console.log(data)
+                app.titletime = true;
+                app.datatime = data.msg;
+                setTimeout(function () {
+                    app.titletime = false;
+                }, 1200)
+                app.unfazed_start = inst._value;
+
+            })
+                .fail(function () {
+                    console.log("error");
+                });
+        }
+    });
+    $('#enddatatime').choice().time({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        wheelOrder: 'hhii',
+        timeFormat: 'HH:ii',
+        timeWheels: 'HHii',
+        minWidth: 200,
+        onSet: function (event, inst) {
+            jsonAjax('/Home/Device/device_params',
+                {
+                    access_token: app.token,
+                    device_id: app.device_id,
+                    uid: app.uid,
+                    unfazed_start: app.unfazed_start,
+                    unfazed_end: inst._value,
+                    unfazed_switch: 1,
+
+                }
+            ).done(function (data) {
+                console.log(data)
+                app.titletime = true;
+                app.datatime = data.msg;
+                setTimeout(function () {
+                    app.titletime = false;
+                }, 1200)
+                app.unfazed_end = inst._value;
+
+            })
+                .fail(function () {
+                    console.log("error");
+                });
+        }
+    });
+</script>
+</body>
+
+</html>
+

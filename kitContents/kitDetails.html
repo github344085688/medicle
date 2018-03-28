@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <script src="../js/jquery.min.js"></script>    <script src="../js/fontzize.js"></script>
+    <script src="../js/choice.js"></script>
+    <link href="../css/choice.min.css" rel="stylesheet" type="text/css"/>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+    <style>
+        body{padding-bottom: 15px; background: url("../imgs/Kitdetails_bg.png") center top no-repeat; background-size: 100% auto; }
+        header{ background: rgba(0,0,0,0.1); border: none; }
+        header nav img{height: 45%;}
+        header nav{color: #fff;}
+        aside{ width: 90%; margin-left: auto; margin-right: auto; background: #fff; text-align: center; padding-top: 5px; box-sizing: border-box; margin-top:10%; height: 7rem; border-radius: 8px 8px 0 0; box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);}
+        aside img{ width: auto; height: 80%; margin: auto;}
+        section{ width: 90%; background: #fff; margin: auto; padding-top: 15px;}
+        section .title{width: 100%; padding-bottom: 10px; padding-left: 5px; box-sizing: border-box; text-align: left; color: #4ed276; font-size:1rem; }
+        section article{width: 100%;box-sizing: border-box;padding: 10px; box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1); position: relative;}
+        section article dl{ width: 70%; padding:8px; margin: 0;}
+        section article dl dd{ width: 40%; padding: 0; margin: 0; display: inline-block;}
+        section article .prompt{position: absolute; top: 50%;margin-top: -0.5rem; right: 15px; font-size: 1rem;color: #00cc33;}
+        .popush{ position: fixed; bottom: 20%;text-align: center; line-height: 3rem; width: 70%; height: 3rem; border-radius: 6px; background:#f1b348; color: #fff;  left: 50%; margin-left: -35%;}
+
+    </style>
+
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav @click="goback"><img src="../imgs/arrow_wire_left.png"></nav>
+        <nav>药盒详情</nav>
+        <nav></nav>
+    </header>
+    <aside>
+        <img src="../imgs/Kitdetails_icon.png" alt="">
+    </aside>
+    <section v-for="item in remainingDrugs">
+        <div class="title" v-html="item.alarm_time"></div>
+        <article>
+            <dl v-for="msg in item.drugs">
+                <dd v-html="msg.drug_name"></dd>
+                <dd v-html="msg.drug_amount"></dd>
+            </dl>
+
+            <div class="prompt" v-if="item.status==0">未取药</div>
+            <div class="prompt" v-else>已取药</div>
+        </article>
+    </section>
+    <div class="popush" v-if="popush">你的药盒已空请及时补充</div>
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            remainingDrugs:{},
+            device_id:'',
+            uid:'',
+            popush:false
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+            var myurl = GetQueryString("device_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id =Number(GetQueryString("device_id").substr(1));
+            }
+            else {
+                 window.location.href = golinks("");
+            }
+            setTimeout(function () {
+                getStages('user');
+            },100);
+            setTimeout(function () {
+                _this.token = StagesDatas.usermsg.access_token;
+                _this.uid = StagesDatas.usermsg.uid;
+                //16 获取当前设备的药仓剩余信息√
+                jsonAjax("/Home/Device/get_box_remain_info",
+                    {access_token:_this.token, device_id: _this.device_id, uid: _this.uid}
+                ).done(function (data) {
+                    if(data.code==40002){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code==40010){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code ==0){
+                        _this.remainingDrugs=data.data;
+
+                    } else {
+                        _this.popush=true;
+                        setTimeout(function () {
+                            window.location.href=golinks("kitContents/ubddevice.html?details="+_this.device_id+"");
+                        },2000)
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },320);
+
+        },
+        methods: {
+            goback:function(){
+                window.location.href= golinks("kitContents/ubddevice.html?details="+this.device_id+"")
+            }
+
+        }
+
+    });
+</script>
+</body>
+
+</html>
+

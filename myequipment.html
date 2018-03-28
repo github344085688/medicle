@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <script src="js/jsonAjax.js"></script>
+    <link rel="stylesheet" href="css/myequipment.css">
+    <link rel="stylesheet" href="css/iconfont.css">
+    <script src="js/jquery.min.js"></script><script src="js/fontzize.js"></script>
+    <script src="js/vue.min.js"></script>
+    <link rel="stylesheet" href="css/myequipmt.css">
+</head>
+<body>
+<div id="app">
+<header>
+    <nav></nav>
+    <nav>我的设备</nav>
+    <nav @click="new_device()"><i class=" iconfont icon-saoyisao"></i></nav>
+</header>
+<section >
+    <article v-for="(item,index) in datalist">
+        <dl>
+            <dd>{{item.my_device_name}}</dd>
+            <dd><span class="link" @click="medicationplan(item,index)">服药计划</span></dd>
+            <dd>{{item.patient_name}}</dd>
+            <dd><span class="link" @click="devicedetails(item)">设备详情</span></dd>
+        </dl>
+    </article>
+</section>
+    <input type="button" value="22" @click="ssss">
+</div>
+<script>
+
+
+</script>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            datalist:[],
+            dataarry:[]
+        },
+        mounted: function () {
+            var _this=this;
+            setTimeout(function(){
+                getStages('user');
+            },80);
+            setTimeout(function(){
+                if(!BooleanStages){
+                    window.location.href=golinks("weixinsq.html");
+                }else {
+                    //接口名称 11 根据用户ID获取设备列表√
+                    jsonAjax('/Home/Device/get_device_list_by_uid',
+                        {access_token:StagesDatas.usermsg.access_token, uid:StagesDatas.usermsg.uid}
+                    ).done(function (data) {
+
+                        if(data.code==40002){
+                             window.location.href=golinks('weixinsq.html')
+                        }
+                        if(data.code==40010){
+                            window.location.href=golinks('weixinsq.html')
+                        }
+                        else if(data.code ==0){
+
+                            if(data.data.length<=0){
+                               window.location.href=golinks("associateddevice/wifinetwork.html");
+                            }else {
+                                _this.datalist=data.data;
+                                var device_id =[{
+                                    keyname: "device_ids",
+                                    usermsg: data.data
+                                }];
+                                setstages(device_id);
+                            }
+
+
+
+                        }
+                    })
+                        .fail(function () {
+                            console.log("error");
+                        });
+                }
+            },300);
+        },
+
+        methods:{
+            getstage:function () {
+
+            },
+            new_device:function () {
+                window.location.href=golinks('associateddevice/wifinetwork.html')
+            },
+            medicationplan:function (item,index) {
+                var usermsg = [
+                {
+                  keyname: "cid",
+                  usermsg: item.cid
+                },
+                {
+                  keyname: "device_id",
+                  usermsg: item.device_id
+                },
+                {
+                  keyname: "patient_name",
+                  usermsg: item.patient_name
+                }];
+                setstages(usermsg);
+                window.location.href=golinks("medicationplan.html?devicid="+item.device_id+"&cid="+item.cid+"");
+            },
+            devicedetails:function (item) {
+                window.location.href=golinks("kitContents/ubddevice.html");
+            },
+            ssss:function (item) {
+                window.location.href =golinks("personaldata/systemsettings.html");
+            }
+
+        }
+
+    });
+</script>
+</body>
+
+</html>

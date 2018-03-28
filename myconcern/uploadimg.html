@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <script src="../js/jsonAjax.js"></script>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <style>
+        .caseimg_box{ width: 95%; margin: auto; padding-top:0.8rem; padding-bottom: 0.6rem;}
+        .caseimg_box ul{ display: flex; width: 100%;flex-wrap:wrap;align-items:center;}
+        .caseimg_box ul li{position: relative; width: 33.333333%; height:7rem; padding: 0.1rem;; box-sizing: border-box;align-self: center;}
+        .caseimg_box ul li .del{ height: 30px; text-align: center; line-height: 30px; width: 30px !important; border-radius: 30px; background:rgba(0,0,0,0.6);  position: absolute;  bottom: 3px; right: 3px;}
+        .caseimg_box ul li .del img{width: auto; height: 50%; }
+        .caseimg_box ul li img{ width: 100%; height: 100%;}
+        .caseimg_box ul .add{ border: #9d9d9d 1px solid; text-align: center; line-height:6rem; }
+        .caseimg_box ul .add img{ width: 30%; height: auto; vertical-align: middle; display: inline-block;}
+        .popush{ position: fixed; bottom: 20%;text-align: center; line-height: 3rem; width: 70%; height: 3rem; border-radius: 6px; background:#f1b348; color: #fff;  left: 50%; margin-left: -35%;}
+
+    </style>
+
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav @click="goback"><img src="../imgs/arrow_left.png"></nav>
+        <nav v-html="Presentext" style="width: 17rem;"></nav>
+        <nav style="width: 5.666667rem;"> <input type="button" value="提交" @click="uploadimg" :disabled="uploaddisabled" style="border: none; background: none; font-size: 15px;color: #000; "></nav>
+    </header>
+    <section>
+        <div class="caseimg_box">
+
+            <ul>
+                <li v-for="(item,index) of imgList"><img :src="item">
+                    <div class="del">
+                        <img src="../imgs/delete_del.png" @click="fileDel(index)"/>
+                    </div>
+                </li>
+                <li class="add" onclick="take_a_photo()"><img src="../imgs/add.png">
+
+                </li>
+            </ul>
+        </div>
+    </section>
+    <div class="popush" v-if="popush" v-html="popushtext"></div>
+</div>
+
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            imgList: [],
+            size: 0,
+            imgdata: [],
+            popush:false,
+            popushtext:'',
+            imgname:[],
+            reco_rdid:0,
+            img_ids:[],
+            Presentext:'',
+
+        },
+        computed:{
+            uploaddisabled:function () {
+                if(this.img_ids.length>0){
+                    return false;
+                }else {
+                    return true;
+                }
+            }
+
+        },
+        mounted: function () {
+            var _this = this;
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("cid");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.detaCid = Number(GetQueryString("cid").substr(1));
+            }
+            else {
+                //window.location.href =golinks("")
+            }
+            var recordids = GetQueryString("record_id");
+            if (recordids != null && recordids.toString().length > 1) {
+
+                _this.reco_rdid = Number(GetQueryString("record_id").substr(1));
+               // console.log(_this.reco_rdid)
+                //console.log(isNaN(_this.reco_rdid))
+            }
+            else {
+                window.location.href =golinks("")
+            }
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.detarole = Number(GetQueryString("role").substr(1));
+                console.log(_this.detarole)
+            }
+            else {
+
+            }
+            var uploadtype = GetQueryString("uploadtype");
+            if (uploadtype != null && uploadtype.toString().length > 1) {
+                _this.gettype = Number(GetQueryString("uploadtype").substr(1));
+                if(_this.gettype==1){
+                    Presentext=""
+                }
+            }
+            else {
+
+            }
+
+            setTimeout(function () {
+                getStages('user');
+            },50);
+            setTimeout(function () {
+                if(!BooleanStages){
+                    window.location.href=golinks("weixinsq.html");
+                }else {
+                console.log(StagesDatas)
+                _this.token = StagesDatas.usermsg.access_token;
+                _this.uid = StagesDatas.usermsg.uid;
+                if (_this.token == null && _this.uid == null) {
+                    window.location.href = golinks("");
+                }
+                }
+            },200);
+        },
+        methods: {
+            fileDel:function (index) {
+                this.imgList.splice(index,1);
+            },
+            uploadimg: function () {
+                var _this=this;
+                if(isNaN(_this.reco_rdid)){
+                    _this.reco_rdid=''
+                }else {
+
+                }
+                $.ajax({
+                    url: 'http://api.zayata.com/index.php?s=/Home/User/upload_patient_record',
+                    type: 'POST',
+                    data:{
+                        access_token:_this.token,
+                        cid:_this.detaCid,
+                        img_ids:_this.img_ids.join(","),
+                        record_id:_this.reco_rdid,
+                        type:_this.gettype,
+                        uid: _this.uid
+                    },
+
+                }).done(function (data) {
+                    console.log(data);
+
+                    if (data.code ==0) {
+                        window.location.href =golinks("myconcern/historyCase.html?cid=" + _this.detaCid + "&uploadtype="+_this.gettype+"&role="+_this.detarole+"")
+                    }
+                    else {
+
+                    }
+
+                })
+                    .fail(function () {
+
+
+                    });
+            },
+            goback: function () {
+                window.location.href = golinks("myconcern/caseReport.html?cid=" +this.detaCid + "&uploadtype="+this.gettype+"&role="+this.detarole+"")
+            }
+        }
+    })
+    $.ajax({
+        type: "post",
+        url: 'http://gh.zayata.com/index.php?s=/Ibox/Web/getSdkConf',
+        data: {url:window.location.href},
+        dataType: 'json',
+    }).done(function (data) {
+        wx.config({
+            debug: false,
+            appId: data.appId,
+            timestamp: data.timestamp, // 必填，生成签名的时间戳
+            nonceStr: data.nonceStr, // 必填，生成签名的随机串
+            signature: data.signature,// 必填，签名，见附录1
+            jsApiList: ['chooseImage', 'uploadImage', 'downloadImage']   // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+        });
+
+
+
+    });
+   function take_a_photo() {
+        //拍照或从手机相册中选图接口
+        wx.chooseImage({
+            count: 6, // 默认9
+            sizeType: ['original'],
+            sourceType: ['album', 'camera'],
+            success: function (res) {
+                var imgs = {};
+              for(var i=0;i<res.localIds.length;i++){
+                    var localId = res.localIds[i];//选择图片成功，上传到微信服务器
+                    wx.getLocalImgData({
+                        localId: localId,
+                        success: function (res) {
+                            var localData = res.localData;
+                            localData = localData.replace('jgp', 'jpeg');
+                            var dataurl;
+                            if (localData.indexOf('base64') < 0) {
+                                dataurl = 'data:image/jpeg;base64,' + localData;
+                            }else {
+                                dataurl=localData;
+                            }
+                            imgs["file["+i+"]"] =dataurl;
+                            app.popush=true;
+                            app.popushtext="图片上传中...."
+                            $.ajax({
+                                headers: {
+                                    "api-version": "1.1"
+                                },
+                                url: 'http://api.zayata.com/index.php?s=/Home/File/uploadPicture',
+                                type: 'POST',
+                                data:imgs,
+                                dataType: 'json',
+                            }).done(function (data) {
+
+                                app.img_ids.push(data.data[0].img_id)
+                                app.imgList.push(data.data[0].imgurl);
+                                app.popush=false;
+
+                            })
+                                .fail(function () {
+                                    console.log("error");
+                                });
+                        }
+                    })
+                }
+
+            }
+        })
+    }
+
+  /*  function take_a_photo() {
+        //拍照或从手机相册中选图接口
+        wx.chooseImage({
+            count: 9, // 默认9
+            sizeType: ['original'],
+            sourceType: ['album', 'camera'],
+            success: function (res) {
+                var imgs = {};
+                for(var i=0;i<res.localIds.length;i++){
+                    var localId = res.localIds[i];//选择图片成功，上传到微信服务器
+                    wx.getLocalImgData({
+                        localId: localId,
+                        success: function (res) {
+                            var localData = res.localData;
+                            localData = localData.replace('jgp', 'jpeg');
+
+
+
+
+                            function convertImgToBase64(url, callback, outputFormat){
+                                var canvas = document.createElement('CANVAS');
+                                var ctx = canvas.getContext('2d');
+                                var img = new Image;
+                                img.crossOrigin = 'Anonymous';
+                                img.onload = function(){
+                                    var width = img.width;
+                                    var height = img.height;
+                                    // 按比例压缩4倍
+                                    var rate = (width<height ? width/height : height/width)/2;
+                                    canvas.width = width*rate;
+                                    canvas.height = height*rate;
+                                    ctx.drawImage(img,0,0,width,height,0,0,width*rate,height*rate);
+                                    var dataURL = canvas.toDataURL(outputFormat || 'image/png');
+                                    callback.call(this, dataURL);
+                                    canvas = null;
+                                };
+                                img.src = url;
+                            }
+
+                         /!*   var strLength=localData.length;
+                            alert(strLength);*!/
+                            convertImgToBase64(localData, function(base64Img){
+
+                              var dataurl;
+
+                                if (base64Img.indexOf('base64') < 0) {
+                                    dataurl = 'data:image/jpeg;base64,' + base64Img;
+                                }else {
+                                    dataurl=base64Img;
+                                }
+                                alert(dataurl);
+                                imgs["file["+i+"]"] =dataurl;
+                                app.popush=true;
+                                app.popushtext="图片上传中...."
+                                $.ajax({
+                                    headers: {
+                                        "api-version": "1.1"
+                                    },
+                                    url: 'http://api.zayata.com/index.php?s=/Home/File/uploadPicture',
+                                    type: 'POST',
+                                    data:imgs,
+                                    dataType: 'json',
+                                }).done(function (data) {
+
+                                    app.img_ids.push(data.data[0].img_id)
+                                    app.imgList.push(data.data[0].imgurl);
+                                    app.popush=false;
+
+                                })
+                                    .fail(function () {
+                                        console.log("error");
+                                    });
+                            });
+                        }
+                    })
+                }
+
+            }
+        })
+    }*/
+</script>
+</body>
+</html>

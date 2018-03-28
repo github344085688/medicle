@@ -1,0 +1,440 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <script src="../js/jsonAjax.js"></script>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/addperson.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/choice.js"></script>
+    <link rel="stylesheet" href="../css/citinsstyle.css"/>
+    <link href="../css/choice.min.css" rel="stylesheet" type="text/css"/>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <style>
+    </style>
+
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav></nav>
+        <nav>添加家人</nav>
+        <nav></nav>
+    </header>
+    <div class="portrait">
+        <div>
+            <div class="box" @click="gailimgfn"><img :src="gailimg"></div>
+        </div>
+        <div>
+            <div class="boxper" ><input type="button" onclick="take_a_photo()" ><img :src="pasondata.headimgurl">
+            </div>
+        </div>
+        <div>
+            <div class="box" @click="manlimgfn"><img :src="manlimg"></div>
+        </div>
+    </div>
+    <section>
+        <dl>
+            <dd>姓名</dd>
+            <dd ><input type="text" class="inputtex" v-model="pasondata.patient_name" placeholder="请输入你家人姓名" ></dd>
+        </dl>
+        <dl>
+            <dd>手机</dd>
+            <dd ><input type="text" class="inputtex"   id="telnumll" onkeyup="value=value.replace(/[^\d]/g,'') " ng-pattern="/[^a-zA-Z]/" v-model="mobile" placeholder="请输入手机号"></dd>
+        </dl>
+        <dl>
+            <dd>邮箱</dd>
+            <dd ><input type="text" class="inputtex"  id="emailnumll" v-model="email" placeholder="请输入邮箱"></dd>
+        </dl>
+        <dl>
+            <dd>出生年月</dd>
+            <dd><input id="datetimeEnd" :placeholder="pasondata.birthday"/></dd>
+        </dl>
+        <dl>
+            <dd>所在地区</dd>
+            <dd><a id="expressArea" href="javascript:void(0)">
+                <span>{{datas.province}}  {{datas.city}} </span>
+            </a><img src="../imgs/arrow_geuee.png"/></dd>
+        </dl>
+        <dl>
+            <textarea rows="3" cols="20" v-model="pasondata.patient_remark" placeholder="备注（药物过敏或特殊病史）:">
+
+</textarea>
+
+        </dl>
+        <input type="button" class="signin" @click="subminsignin" :disabled="submindisabledSty"
+               :class="{signinup:!submindisabledSty}" value="保存">
+    </section>
+
+    <div class="popuparticle" v-html="tishi" v-if="tishidisa"></div>
+
+
+</div>
+
+</div>
+
+<div class="browser">
+    <!--选择地区弹层-->
+    <div id="areaLayer" class="express-area-box">
+
+        <div class="headeret">
+            <h3>选择地区</h3>
+            <a id="backUp" class="back" href="javascript:void(0)" title="返回"></a>
+            <a id="closeArea" class="close" href="javascript:void(0)" title="关闭"></a>
+        </div>
+        <div class="articleet" id="areaBox">
+            <ul id="areaList" class="area-list"></ul>
+        </div>
+
+    </div>
+
+    <!--遮罩层-->
+
+    <div id="areaMask" class="mask"></div>
+
+</div>
+<script src="../js/jquery.area.js"></script>
+<script type="text/javascript">
+
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+           pasondata:{
+               access_token:"",
+               address:null,
+               birthday:"0000-00-00",
+               email:"",
+               headimgurl:"",
+               mobile:"",
+               patient_name:"",
+               patient_remark:"",
+               sex:1,
+               uid:null,
+
+           },
+            gailimg: '../imgs/nv-off.png',
+            manlimg: '../imgs/nan-off.png',
+            datas:{
+               province:'省',
+               city:'市'
+           },
+            tishidisa: false,
+            tishi:'',
+            mobile:'',
+            email:'',
+            addjrs:null
+
+        },
+        computed: {
+            submindisabledSty: function () {
+                if(this.pasondata.patient_name!=''
+                    &&this.pasondata.sex!=null
+                    &&this.pasondata.birthday!="0000-00-00"
+                    ){ return false;}else {
+                    return true;
+                }
+
+            },
+        },
+        watch: {
+
+
+
+        },
+        mounted: function () {
+            this.pasondata.address=this.datas.province+this.datas.city;
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("addjr");
+            if (myurl != null && myurl.toString().length > 1) {
+                this.addjrs = Number(GetQueryString("addjr").substr(1));
+                console.log(this.addjrs)
+            }
+            else {
+
+
+            }
+            var myurl = GetQueryString("detacid");
+                        if (myurl != null && myurl.toString().length > 1) {
+                            _this.detacid = Number(GetQueryString("detacid").substr(1));
+                        }
+                        else {
+
+                            _this.detacid='';
+                        }
+            setTimeout(function () {
+                getStages('user');
+            }, 100);
+            setTimeout(function () {
+                if (!BooleanStages) {
+                    window.location.href = golinks("weixinsq.html");
+                } else {
+                    _this.pasondata.access_token = StagesDatas.usermsg.access_token;
+                    _this.pasondata.uid = StagesDatas.usermsg.uid;
+                    if(_this.pasondata.sex==1){
+                        _this.manlimg = '../imgs/nan-on.png';
+                        _this.gailimg = '../imgs/nv-off.png';
+
+                    }else {
+                        _this.gailimg = '../imgs/nv-on.png';
+                        _this.manlimg = '../imgs/nan-off.png';
+                    }
+                    if(_this.detacid!=""){
+
+                        //15 根据UID获取服药人信息√
+                        jsonAjax("/Home/User/get_patient_info_by_uid", {
+                            access_token: _this.pasondata.access_token,
+                            uid: _this.pasondata.uid
+                        }).done(function (data) {
+                            if(data.code==40002){
+                                window.location.href=golinks('weixinsq.html')
+                            }
+                            if(data.code==40010){
+                                window.location.href=golinks('weixinsq.html')
+                            }
+                            if (data.code ==0) {
+                                console.log(data.data)
+                                var lisarry=[];
+                                for(var i=0; i<data.data.length; i++){
+                                    lisarry.push(Number(data.data[i].cid));
+                                }
+                                var index=lisarry.indexOf(_this.detacid);
+                                _this.pasondata.address=data.data[index].address;
+                                _this.pasondata.birthday=data.data[index].birthday;
+                                _this.pasondata.email=data.data[index].email;
+                                _this.pasondata.headimgurl=data.data[index].headimgurl;
+                                _this.pasondata.mobile=data.data[index].mobile;
+                                _this.pasondata.patient_name=data.data[index].patient_name;
+                                _this.pasondata.patient_remark=data.data[index].patient_remark;
+                                _this.pasondata.sex=data.data[index].sex;
+                                _this.mobile=_this.pasondata.mobile;
+                                _this.email=_this.pasondata.email;
+                                console.log(_this.pasondata.address.split(' ')[0])
+                                _this.datas.province=_this.pasondata.address.split(' ')[0];
+                                _this.datas.city=_this.pasondata.address.split(' ')[1];
+                                if(data.data[index].sex==1){
+                                    _this.manlimg = '../imgs/nan-on.png';
+                                    _this.gailimg = '../imgs/nv-off.png';
+
+                                }else {
+                                    _this.gailimg = '../imgs/nv-on.png';
+                                    _this.manlimg = '../imgs/nan-off.png';
+                                }
+
+
+
+                            }
+
+                        })
+                            .fail(function () {
+                                console.log("error");
+                            });
+                    }
+
+                }
+
+            }, 300);
+
+
+        },
+        methods: {
+            subminsignin: function () {
+
+                // 接口名称 25 新增家人（新增服药人 / 新增关注）
+                var _this = this;
+                if(_this.datas.city==undefined){
+
+                }else {
+                    _this.pasondata.address=_this.datas.province+_this.datas.city;
+                }
+console.log(_this.mobile);
+console.log(_this.email);
+
+               jsonAjax("/Home/User/add_patient",
+                    {
+                        access_token:_this.pasondata.access_token,
+                        address:_this.pasondata.address,
+                        birthday:_this.pasondata.birthday,
+                        cid:_this.detacid,
+                        email:_this.email,
+                        headimgurl:_this.pasondata.headimgurl,
+                        mobile:_this.mobile,
+                        patient_name:_this.pasondata.patient_name,
+                        patient_remark:_this.pasondata.patient_remark,
+                        sex:_this.pasondata.sex,
+                        uid:_this.pasondata.uid,
+                    }
+                ).done(function (data) {
+                    _this.tishidisa= true;
+                    _this.tishi=data.msg;
+                    setTimeout(function () {
+                        _this.tishidisa=false;
+                    },800)
+                    console.log(data);
+                    console.log(_this.addjrs)
+                    console.log(_this.addjrs==1)
+                    if(_this.addjrs==1){
+                       window.location.href = golinks("associateddevice/adddevice.html?device=" + _this.device + "")
+                    }else {
+                       window.location.href = golinks("myconcern/myconcern.html")
+
+                    }
+
+
+                })
+
+            },
+            gailimgfn: function () {
+                this.gailimg = '../imgs/nv-on.png';
+                this.manlimg = '../imgs/nan-off.png';
+                this.pasondata.sex = 2;
+            },
+            manlimgfn: function () {
+                this.manlimg = '../imgs/nan-on.png';
+                this.gailimg = '../imgs/nv-off.png';
+                this.pasondata.sex = 1;
+            },
+            onUpload: function (e) {
+            },
+
+
+
+
+
+        }
+
+    });
+    //国码
+    var datacity = [];
+    $('#changCity').choice().scroller({
+        theme: 'ios',
+        display: 'bottom',
+        lang: 'zh',
+        onInit: function (event, inst) {
+            for (var i = 0; i < app.teldata.changCity.length; i++) {
+                datacity.push('-' + app.teldata.changCity[i].code + '-' + app.teldata.changCity[i].country)
+            }
+        },
+        wheels: [
+            [{
+                data: datacity
+            }]
+        ],
+        onSet: function (event, inst) {
+            app.teldata.countryCode = inst._value.replace(/[^0-9]/ig, "");
+            app.teldata.username = '';
+
+        }
+    });
+    //国码
+    //出生年月
+    var now = new Date(),
+        min = new Date(now.getFullYear() - 70, now.getMonth(), now.getDate());
+    var currYear = (new Date()).getFullYear();
+    $('#datetimeEnd').choice().date({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        min: min,
+        max:now,
+        onSet: function (event, inst) {
+            app.pasondata.birthday = inst._value;
+        }
+    });
+
+    $.ajax({
+        type: "post",
+        url: 'http://gh.zayata.com/index.php?s=/Ibox/Web/getSdkConf',
+        data: {url:window.location.href},
+        dataType: 'json',
+    }).done(function (data) {
+        wx.config({
+            debug: false,
+            appId: data.appId,
+            timestamp: data.timestamp, // 必填，生成签名的时间戳
+            nonceStr: data.nonceStr, // 必填，生成签名的随机串
+            signature: data.signature,// 必填，签名，见附录1
+            jsApiList: ['chooseImage', 'uploadImage', 'downloadImage']   // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+        });
+
+
+
+    });
+    function take_a_photo() {
+        //拍照或从手机相册中选图接口
+        wx.chooseImage({
+            count: 1, // 默认9
+            sizeType: ['original'],
+            sourceType: ['album', 'camera'],
+            success: function (res) {
+                var localId = res.localIds[0];//选择图片成功，上传到微信服务器
+                wx.getLocalImgData({
+                    localId: localId,
+                    success: function (res) {
+                        var localData = res.localData;
+
+                        localData = localData.replace('jgp', 'jpeg');
+
+                        var dataurl;
+                        if (localData.indexOf('base64') < 0) {
+                            dataurl = 'data:image/jpeg;base64,' + localData;
+                        }else {
+                            dataurl=localData;
+                        }
+                        var imgs = {};
+                        imgs["file[0]"] =dataurl;
+                        $.ajax({
+                            url: 'http://api.zayata.com/index.php?s=/Home/File/uploadPicture',
+                            type: 'POST',
+                            data:imgs,
+
+                        }).done(function (data) {
+                            app.pasondata.headimgurl=data.data[0].imgurl;
+                            var _this = this;
+                            jsonAjax("/Home/User/api_update_member_info",JSON.stringify(
+                                {
+                                    access_token: app.token,
+                                    data: app.datas,
+                                    uid: app.uid
+                                })
+                            ).done(function (data) {
+
+                            });
+                        })
+                            .fail(function () {
+                                console.log("error");
+                            });
+                    }
+                })
+
+            }
+        })
+    }
+    function upperCase() {
+
+
+
+    }
+    function emaiCase() {
+
+
+    }
+
+
+
+</script>
+</body>
+
+</html>
+

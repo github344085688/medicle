@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/bindingdevice.css">
+    <script src="../js/jquery.min.js"></script>    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+    <style>
+
+         </style>
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav @click="goback"><img src="../imgs/arrow_left.png"></nav>
+        <nav>绑定用户</nav>
+        <nav></nav>
+    </header>
+    <section>
+        <dl v-for="item in msg">
+            <dt><img :src="item.headimgurl"></dt>
+            <div class="name"> {{item.nickname}}<span v-if="item.role==2&&role==1" @click="administrators(item)">设为管理员</span>
+            </div>
+            <div class="lianxi" v-if="item.mobile!=''">
+                <img src="../imgs/dianhua11.png"><span>{{item.mobile}}</span>
+            </div>
+            <div class="lianxi" v-else>
+                <img src="../imgs/youxiang.png"><span>{{item.email}}</span>
+            </div>
+            <div class="jieban"  @click="Unbundling(item)" v-if="item.jieban">解绑</div>
+        </dl>
+    </section>
+    <div class="popuparticle" v-html="tishi" v-if="tishidisa"></div>
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            msg:[],
+            tishi:'',
+            tishidisa:false,
+
+        },
+        mounted: function () {
+            var _this = this;
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+            var myurl = GetQueryString("device_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id =Number(GetQueryString("device_id").substr(1));
+            }
+            else {
+                //window.location.href = "http://192.168.0.138";
+            }
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.role = Number(GetQueryString("role").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var token = GetQueryString("token");
+            if (token != null && role.toString().length > 1) {
+                _this.token =GetQueryString("token").substr(1);
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var uid = GetQueryString("uid");
+            if (uid != null && role.toString().length > 1) {
+                _this.uid = Number(GetQueryString("uid").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            //获取外部链接参数
+
+                jsonAjax('/Home/Device/get_device_bundle_list',
+                    {access_token:_this.token, device_id: _this.device_id, uid: _this.uid}
+                ).done(function (data) {
+                    if(data.code==40002){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code==40010){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code ==0){
+                        console.log(data)
+                        _this.msg=data.data;
+                        if(_this.role==1){
+                            for(var i=0;i<_this.msg.length;i++){
+                                _this.$set(_this.msg[i],'jieban',false);
+                            }
+                        }else  if(_this.role==2){
+                            for(var i=0;i<_this.msg.length;i++){
+                                if(_this.msg[i].role==1||_this.msg[i].uid!=_this.uid){
+                                    _this.$set(_this.msg[i],'jieban',false);
+                                }else {
+                                        _this.$set(_this.msg[i],'jieban',true);
+                                }
+                            }
+                        }
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+        },
+        methods: {
+            deviceinfor:function () {
+                window.location.href=golinks("dmanagement/deviceinfor.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&off=1")
+            },
+            parameter:function () {
+                window.location.href=golinks("dmanagement/parameter.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&off=1")
+            },
+            conditionmonitoring:function () {
+                window.location.href=golinks("dmanagement/conditionmonitoring.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&off=1")
+            },
+            calibrationtime:function () {
+                window.location.href=golinks("dmanagement/calibrationtime.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&off=1")
+            },
+            Unbundling:function (item) {
+                console.log(item);
+                var _this = this;
+               jsonAjax('/Home/Device/set_user_role',
+                    {
+                        access_token:_this.token,
+                        device_id: _this.device_id,
+                        replace_uid:item.uid,
+                        type:2,
+                        uid: _this.uid}
+                ).done(function (data) {
+                    if(data.code==40002){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code==40010){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code ==0){
+                        _this.tishi=data.msg;
+                        _this. tishidisa=true;
+                        window.location.href=golinks("dmanagement/devicedetails.html?token="+this.token+"&uid="+this.uid+"&device_id="+_this.device_id+"&role="+_this.role+"&off=1")
+                        setTimeout(function () {
+                            _this. tishidisa=false;
+                        },300)
+                        console.log(data)
+                        //_this.msg=data.data;
+                    }
+
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                //
+            },
+            administrators:function (item) {
+                var _this = this;
+
+                //08 更改用户状态√
+                jsonAjax('/Home/Device/set_user_role',
+                    {
+                        access_token:_this.token,
+                        device_id: _this.device_id,
+                        replace_uid:item.uid,
+                        type:1,
+                        uid: _this.uid}
+                ).done(function (data) {
+                    if(data.code==40002){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code==40010){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code ==0){
+                        item.role=1;
+                        _this.tishi=data.msg;
+                            _this. tishidisa=true
+                        setTimeout(function () {
+                            _this. tishidisa=false;
+                        },300)
+                        window.location.href=golinks("dmanagement/devicedetails.html")
+                       // console.log(data);
+                        //_this.msg=data.data;
+                    }
+
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                //window.location.href=golinks("dmanagement/calibrationtime.html?device_id="+this.device_id+"")
+            },
+            goback:function () {
+                var _this=this;
+                window.location.href=golinks("dmanagement/devicedetails.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&off=1")
+            },
+            configuration:function () {
+            }
+
+        }
+
+    });
+
+</script>
+</body>
+
+</html>
+

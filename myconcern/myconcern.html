@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/myconcern.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+
+</head>
+<body>
+<div id="app">
+    <section >
+        <article v-for="(item,index) in datas">
+            <div class="img_box"><img :src="item.headimgurl" alt=""></div>
+            <div class="name">{{item.patient_name}}<img src="../imgs/nan1.png" alt="" v-if="item.sex==1"><img src="../imgs/nv1.png" alt="" v-if="item.sex==2">{{item.age}}</div>
+            <div class="lianxi" v-if="item.mobile!=''"><img src="../imgs/dianhua11.png" alt="">{{item.mobile}}</div>
+            <div class="lianxi" v-else=""><img src="../imgs/youxiang.png" alt="">{{item.mobile}}</div>
+            <div class="chakan" @click="bianji(item)">查看详情</div>
+            <div class="beizhu">备注：{{item.patient_remark}}</div>
+            <div class="remove" @click="removejr(item,index)" v-if="item.device_count==0">删除家人</div>
+            <div class="removenot" v-else>删除家人</div>
+        </article>
+        <div class="artclt" @click="addjren"><img src="../imgs/addmore.png" alt="">添加成员 </div>
+    </section>
+
+    <div class="lodingboc" v-show="lodingboc">
+        <img src="../imgs/loding.gif" alt="">
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            datas: [],
+            lodingboc:true
+        },
+        mounted: function () {
+            var _this=this;
+        setTimeout(function () {
+            getStages('user');
+        },100);
+        setTimeout(function () {
+            if(!BooleanStages){
+                window.location.href = golinks("weixinsq.html");
+            }else {
+                _this.token = StagesDatas.usermsg.access_token;
+                _this.uid = StagesDatas.usermsg.uid;
+
+            }
+            //15 根据UID获取服药人信息√
+            jsonAjax("/Home/User/get_patient_info_by_uid", {
+                access_token: _this.token,
+                uid: _this.uid
+            }).done(function (data) {
+                if(data.code==40002){
+                    window.location.href=golinks('weixinsq.html')
+                }
+                if(data.code==40010){
+                    window.location.href=golinks('weixinsq.html')
+                }
+                if (data.code ==0) {
+                    console.log(data.data)
+                    _this.datas = data.data
+                    var device_id =[{
+                        keyname: "device_cid",
+                        usermsg: data.data
+                    }
+                    ];
+                    setstages(device_id);
+                }
+
+            })
+                .fail(function () {
+                    console.log("error");
+                });
+            _this.lodingboc=false;
+
+        },200);
+
+        },
+        methods: {
+            bianji: function (item) {
+                window.location.href = golinks("personaldata/addperson.html?detacid=" + item.cid + "")
+            },
+            addjren: function (item) {
+                window.location.href = golinks("personaldata/addperson.html")
+            },
+            removejr: function (item,index) {
+                var _this=this;
+                console.log(item.cid)
+                //15 根据UID获取服药人信息√
+                jsonAjax("/Home/User/del_patient", {
+                    access_token: _this.token,
+                    cid:item.cid,
+                    uid: _this.uid
+                }).done(function (data) {
+                    if(data.code==40002){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    if(data.code==40010){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    if (data.code ==0) {
+                        _this.datas.splice(index,1);
+                        console.log(data)
+
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },
+            patientdata: function (item) {
+
+            }
+        }
+
+    });
+</script>
+</body>
+
+</html>

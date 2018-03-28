@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width,  initial-scale=1, minimum-scale=1, maximum-scale=1, minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="css/myequipment.css">
+    <script src="js/vue.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/fontzize.js"></script>
+    <script src="js/choice.js"></script>
+    <script src="js/jsonAjax.js"></script>
+    <link href="css/choice.min.css" rel="stylesheet" type="text/css"/>
+    <link href="css/medicationplan.css" rel="stylesheet" type="text/css"/>
+
+</head>
+<body>
+<div id="app">
+
+    <header>
+        <nav @click="goback"><img src="../imgs/arrow_left.png"></nav>
+        <nav></nav>
+        <nav ></nav>
+    </header>
+    <section>
+        <dl>
+            <dd>自定义闹钟有效期</dd>
+            <dd class="prdl">
+                <div class="switchbox">
+                    <div class="switch" @click="onandoff(mockdata.always_use)">
+                        <div class="bagcol " :class="{ bgopen:mockdata.always_use==0}"></div>
+                        <div class="open" :class="{ openright:mockdata.always_use==0}"></div>
+                    </div>
+                </div>
+            </dd>
+        </dl>
+        <div class="inputchange" v-show="mockdata.always_use==0">
+            <div class="input_box"><input id="start_date" type="button" :value="mockdata.start_date"/></div>
+            <div class="inmgs_box"><img src="imgs/arrow_geuee.png"></div>
+
+        </div>
+        <div class="inputchange" v-show="mockdata.always_use==0">
+            <div class="input_box"><input id="end_date" type="button" :value="mockdata.end_date"/></div>
+            <div class="inmgs_box"><img src="imgs/arrow_geuee.png"></div>
+        </div>
+        <!--<div class="inputchange" v-show="mockdata.always_use==1">
+            <div class="input_box">
+                <input type="button" :value="mockdata.start_date"/>
+            </div>
+
+
+        </div>
+        <div class="inputchange" v-show="mockdata.always_use==1">
+            <div class="input_box">
+                <input type="button" :value="mockdata.end_date"/>
+            </div>
+
+        </div>-->
+
+    </section>
+    <div class="beizhus">
+        <input type="button" class="signin"  value="确定提交"  @click="tijiao" >
+    </div>
+    <div class="popushe" v-if="jiandu" >
+        <div class="pr">
+            <div class="title" >是否保存设置 ？</div>
+            <div class="queding"  @click="tijiao">是</div>
+            <div class="quxiao"  @click="quxiaojiandu">否</div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            transition: false,
+            jsondevicelist: [],//智能硬件ID号列表
+            thisPlan_id: '',
+            is_automatic: null,
+            changtime: null,
+            asidebule: false,
+            medication19: {},
+            tishinaozhong: false,
+            mockdata: {
+                access_token: '',
+                always_use: 1,
+                ceil_used: '',
+                cid: '',
+                device_id: '',
+                end_date: '',
+                plan_id: 0,
+                start_date: '',
+                uid: ''
+            },
+            lodingboc: true,
+            jiandu:false
+
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("plan_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.plan_id = Number(GetQueryString("plan_id").substr(1));
+
+            }
+            else {
+                //window.location.href = golinks("");
+            }
+            var device_id = GetQueryString("device_id");
+            if (device_id != null && device_id.toString().length > 1) {
+                _this.device_id = Number(GetQueryString("device_id").substr(1));
+
+            }
+            else {
+                //window.location.href = golinks("");
+            }
+            var token = GetQueryString("token");
+            if (token != null && token.toString().length > 1) {
+                _this.token = (GetQueryString("token").substr(1));
+
+            }
+            else {
+                //window.location.href = golinks("");
+            }
+            var uid = GetQueryString("uid");
+            if (uid != null && uid.toString().length > 1) {
+                _this.uid = (GetQueryString("uid").substr(1));
+
+            }
+            else {
+                //window.location.href = golinks("");
+            }
+
+
+            ////接口名称 19 获取设备的服药计划√
+            jsonAjax('/Home/Device/get_device_plan',
+                {access_token: _this.token, device_id: _this.device_id, plan_id: _this.plan_id, uid: _this.uid}
+            ).done(function (data) {
+
+                if (data.code == 40002) {
+                    window.location.href = golinks('weixinsq.html')
+                }
+                if (data.code == 40010) {
+                    window.location.href = golinks('weixinsq.html')
+                }
+                //全局改变状态
+                if (data.code == 0) {
+                    _this.mockdata = data.data;
+                    console.log(data.data);
+                    _this.enddate=data.data.end_date;
+                    _this.startdate=data.data.start_date;
+                    _this.gobask=data.data.always_use;
+
+                } else {
+                }
+                _this.lodingboc = false;
+            })
+                .fail(function () {
+                    console.log("error");
+                });
+
+
+        },
+        methods: {
+            quedingjiandu:function (device) {
+                //接口名称 02 当前用户绑定设备√
+                var _this=this;
+                var today = new Date().getTimezoneOffset()/60;
+                _this.timezone="GMT+0"+(-today)+":00";
+                _this.region=jstz.determine().name();
+                jsonAjax('/Home/Device/bundle_device',
+                    {
+                        access_token:_this.token,
+                        language:_this.language,
+                        product_sn:device,
+                        time_zone_district: _this.region,
+                        time_zone_str: _this.timezone,
+                        uid: _this.uid
+                    }
+                ).done(function (data) {
+                    if(data.code ==0){
+                        window.location.href=golinks('medicationplan.html');
+                    }
+
+
+                });
+                //
+            },
+            quxiaojiandu:function () {
+                window.location.href = golinks("medicationplan.html?devicid=" + this.device_id + "&role=1");
+                this.jiandu=false;
+                this.device='';
+            },
+
+            goback: function () {
+                console.log(this.enddate);
+                console.log(this.startdate);
+                console.log(this.mockdata.end_date);
+                console.log(this.mockdata.start_date);
+
+                if(this.gobask!=this.mockdata.always_use
+                    ||this.enddate!=this.mockdata.end_date
+                    ||this.startdate!=this.mockdata.start_date){
+                    this.jiandu=true;
+
+
+                }else {
+
+                    window.location.href = golinks("medicationplan.html?devicid=" + this.device_id + "&role=1");
+                }
+
+
+            },
+            tijiao: function () {
+                var _this = this;
+                //接口名称 26 编辑服药计划（api-version：1.1）
+                jsonAjax('/Home/Device/modify_device_plan_new',
+                    {
+                        access_token: _this.token,
+                        always_use: _this.mockdata.always_use,
+                        ceil_used: _this.mockdata.ceil_used,
+                        cid: _this.mockdata.cid,
+                        device_id: _this.mockdata.device_id,
+                        end_date: _this.mockdata.end_date,
+                        plan_id: _this.mockdata.plan_id,
+                        start_date: _this.mockdata.start_date,
+                        uid: _this.uid,
+                    }
+                ).done(function (data) {
+                    if (data.code == 0) {
+                        window.location.href = golinks("medicationplan.html?devicid=" + _this.device_id + "&role=1");
+                    }
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },
+            onandoff: function (numll) {
+
+                var _this = this;
+                if (numll == 0) {
+                    _this.mockdata.always_use = 1;
+                } else {
+                    _this.mockdata.always_use = 0;
+                }
+                console.log(_this.mockdata.always_use)
+
+            },
+
+
+        }
+
+    });
+    //选择智能硬件ID
+
+    var now = new Date(),
+        max = new Date(now.getFullYear() + 10, now.getMonth(), now.getDate());
+    var currYear = (new Date()).getFullYear()
+    var currMonth = (new Date()).getMonth();
+    var currDay = (new Date()).getDate();
+    var today = new Date();
+    $('#start_date').choice().date({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        max: max,
+        min: today,
+        onSet: function (event, inst) {
+            app.mockdata.start_date = inst._value;
+            var stedate,
+                stedtime,
+                stedate = app.mockdata.start_date.split("-");
+            stedtime = new Date("'" + stedate[1] + "," + stedate[2] + "," + stedate[0] + "'")
+            var startdate = app.mockdata.start_date;
+            var enddate = app.mockdata.end_date;
+            startdate = new Date(Date.parse(startdate.replace(/-/g, "/")));
+            startdate = startdate.getTime();
+            enddate = new Date(Date.parse(enddate.replace(/-/g, "/")));
+            enddate = enddate.getTime();
+            if (startdate > enddate) {
+                app.mockdata.end_date = app.mockdata.start_date;
+            }
+            console.log(startdate)
+            console.log(enddate)
+            console.log(app.mockdata.start_date)
+            console.log(app.mockdata.end_date)
+
+
+        }
+    });
+    $('#end_date').choice().date({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        max: max,
+        min: today,
+        onSet: function (event, inst) {
+            app.mockdata.end_date = inst._value;
+            var stedate,
+                stedtime,
+                stedate = app.mockdata.start_date.split("-");
+            stedtime = new Date("'" + stedate[1] + "," + stedate[2] + "," + stedate[0] + "'")
+
+            var startdate = app.mockdata.start_date;
+            var enddate = app.mockdata.end_date;
+            startdate = new Date(Date.parse(startdate.replace(/-/g, "/")));
+            startdate = startdate.getTime();
+            enddate = new Date(Date.parse(enddate.replace(/-/g, "/")));
+            enddate = enddate.getTime();
+            if (startdate > enddate) {
+                app.mockdata.start_date = app.mockdata.end_date;
+            }
+
+            console.log(app.mockdata.start_date)
+            console.log(app.mockdata.end_date)
+        }
+    });
+
+
+</script>
+</body>
+</html>

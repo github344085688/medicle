@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+    <style>
+        body{ padding-top: 0;}
+        header{ width: 100%; height: 45px;  background: #f8f8f8; position: static; }
+        header nav{height: 100%; vertical-align: middle; display: inline-block;}
+        header nav:nth-of-type(1){ width: 20%;text-align: left; padding-left: 10px; box-sizing:border-box;}
+        header nav:nth-of-type(2){ width: 60%;}
+        header nav:nth-of-type(3){ width: 20%; color: #00cc33 ;font-size: 0.85rem;}
+        .log_box{ margin: auto; height: 4rem; text-align: center; margin: 20%;}
+        .shum{ width: 70%; margin: auto;padding-top: 2rem; padding-bottom: 2rem;}
+        .shum input{ width: 100%; margin: auto;padding-left: 10px; height: 1.5rem; border:#cacaca solid 1px; border-radius: 15px; }
+        .shum input :-moz-placeholder {color:#999;}
+　　    .shum input::-moz-placeholder {　color:#999;}
+　　    .shum input:-ms-input-placeholder {color:#999;}
+        .input_box{ width: 100%; text-align: center;padding-bottom: 2rem;}
+        .next{ width: 55%; margin: auto; background: #00cc33; color: #ffffff; text-align: center; padding: 5px; border-radius: 15px; border: none; outline: none; }
+        .skip{ width: 55%; margin: auto; background: #e5e5e5;  text-align: center; padding: 5px; border-radius: 15px; border: none; outline: none; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav onclick="goback()"><img src="../imgs/arrow_left.png"></nav>
+        <nav>设备管理</nav>
+        <nav></nav>
+    </header>
+    <section>
+        <div class="log_box"><img src="../imgs/configuration.png" />
+            <p>请将设备调至配网状态</p>
+        </div>
+        <div class="shum">
+            <p><input type="text" placeholder="WIFI名称"></p>
+            <p><input type="text" placeholder="WIFI密码"></p>
+        </div>
+        <div class="input_box">
+            <p>设备窗口出现WIFI信号格即配网成功</p>
+            <input type="button" class="next" value="下一步" onclick="WIFInetwork()">
+        </div>
+
+    </section>
+</div>
+<script type="text/javascript">
+    var device_id;
+    //获取外部链接参数
+    function GetQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null)return unescape(r[2]);
+        return null;
+    }
+    var myurl = GetQueryString("device_id");
+    if (myurl != null && myurl.toString().length > 1) {
+        device_id=Number(GetQueryString("device_id").substr(1));
+    }
+    function goback() {
+        window.location.href= golinks("dmanagement/devicedetails.html?device_id="+device_id+"")
+
+    }
+    function WIFInetwork() {
+        window.location.href= golinks("kitContents/ubddevice.html?details="+device_id+"");
+
+    }
+
+
+
+
+
+</script>
+</body>
+
+</html>
+

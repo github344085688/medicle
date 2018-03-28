@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/wifinetwork.css">
+    <script src="../js/jquery.min.js"></script>    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/jsonAjax.js"></script>
+    <script src="../js/jstz-1.0.4.min.js"></script>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <style>
+
+</style>
+</head>
+<body>
+<div id="app">
+
+    <section>
+        <div class="log_box">
+            <img src="../imgs/erweimashum.png">
+        </div>
+        <div class="centinput">
+            <input type="text" v-model="device" placeholder="请输入DN码">
+            <input class="saosao" type="button" id="scanQRCode1">
+            <img src="../imgs/saoyosao.png" alt="" class="saosaoimg">
+        </div>
+        <div class="input_box">
+            <input type="button" class="signin" value="提交" @click="Inetwork(device)"  :disabled="submindisabledSty"
+                   :class="{signinup:!submindisabledSty}">
+        </div>
+
+    </section>
+    <div class="popuparticle" v-html="tishi" v-if="tishidisa"></div>
+    <div class="popushe" v-if="jiandu">
+        <div class="pr">
+            <div class="titleti" v-html="titletis"></div>
+            <div class="title" v-html="titletitle">你要成为监督者吗？</div>
+            <div class="queding" v-if="quedingdas" @click="quedingjiandu(device)">确定</div>
+            <div class="quxiao" :class="{'quxiaoda':quxiaodas}" @click="quxiaojiandu">取消</div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            device:"",//智能硬件
+            tishidisa:false,
+            tishi:"",
+            titletis:'',
+            jiandu:false,
+            titletitle:'',
+            quxiaodas:false,
+            quedingdas:true,
+            timezone:'',
+            region:'',
+        },
+        computed:{
+            submindisabledSty:function () {
+                if(this.device.length!=0){
+                    return false;
+                }else {
+                    return true;
+                }
+                
+            }
+        },
+        mounted:function(){
+            var _this=this;
+            setTimeout(function () {
+                getStages('user');
+            },80);
+            setTimeout(function () {
+                if(!BooleanStages){
+                    window.location.href=golinks("weixinsq.html");
+                    return false;
+                }else {
+                    _this.token = StagesDatas.usermsg.access_token;
+                    _this.uid = StagesDatas.usermsg.uid;
+                    _this.languages = StagesDatas.languages;
+                }
+            },250)
+        },
+        methods:{
+            Inetwork:function (device) {
+                var _this=this;
+                if(_this.device==""){
+                    console.log("ssljsk")
+                }else {
+                    //01 判断设备√
+                    jsonAjax('/Home/Device/get_device_bundle_info',
+                        {
+                            access_token:_this.token,
+                            language:_this.language,
+                            product_sn:device,
+                            uid: _this.uid
+                        }
+                    ).done(function (data) {
+                        // window.localStorage.setItem('cid',data.data.cid);//服药人id
+                        console.log(data)
+                        console.log(data)
+                        console.log(data)
+                        console.log(data)
+                        console.log(data)
+                        if(data.code==40004){
+                            _this.tishi=data.msg;
+                            _this.tishidisa=true;
+                            setTimeout(function () {
+                                _this.tishidisa = false;
+                            },900)
+                        }
+                        if(data.code ==0){
+
+                            if(data.code==40002){
+                                window.location.href=golinks('weixinsq.html')
+                            }
+                            if(data.code==40010){
+                                window.location.href=golinks('weixinsq.html')
+                            }
+                            else if(data.code ==0){
+                                var usermsg=[{
+                                    keyname:"newdevice",
+                                    data:data.data
+                                }];
+                                if(data.data.bundle_status==1){
+                                    setstages(usermsg);
+                                    window.location.href=golinks('associateddevice/adddevice.html?device='+device+'&is_skip='+data.data.is_skip+'');
+                                }
+                                else {
+                                    if(data.data.bundle_status==2){
+                                        _this.titletis="此设备已绑定自己";
+                                        _this.jiandu=true;
+                                        _this.quxiaodas=true;
+                                        _this.quedingdas=false;
+                                        _this.titletitle="";
+                                    }if(data.data.bundle_status==3){
+                                        _this.titletis="此设备已绑定别人";
+                                        _this.jiandu=true;
+                                        _this.quxiaodas=false;
+                                        _this.quedingdas=true;
+                                        _this.titletitle="你确定要成监督者吗?";
+                                    }
+
+                                }
+
+                            }
+
+
+
+
+                        }
+                    })
+                        .fail(function () {
+                            console.log("error");
+                        });
+
+                }
+
+
+            },
+            quedingjiandu:function (device) {
+                //接口名称 02 当前用户绑定设备√
+                var _this=this;
+                var today = new Date().getTimezoneOffset()/60;
+                _this.timezone="GMT+0"+(-today)+":00";
+                _this.region=jstz.determine().name();
+                jsonAjax('/Home/Device/bundle_device',
+                    {
+                        access_token:_this.token,
+                        language:_this.language,
+                        product_sn:device,
+                        time_zone_district: _this.region,
+                        time_zone_str: _this.timezone,
+                        uid: _this.uid
+                    }
+                ).done(function (data) {
+                    if(data.code ==0){
+                        window.location.href=golinks('medicationplan.html');
+                    }
+
+
+                });
+                //
+            },
+            quxiaojiandu:function () {
+                this.jiandu=false;
+                this.device='';
+            }
+
+
+
+        }
+
+    });
+
+
+
+    $.ajax({
+        type: "post",
+        url: 'http://gh.zayata.com/index.php?s=/Ibox/Web/getSdkConf',
+        data: {url:window.location.href},
+        dataType: 'json',
+    }).done(function (data) {
+        wx.config({
+            debug: false,
+            appId: data.appId,
+            timestamp: data.timestamp, // 必填，生成签名的时间戳
+            nonceStr: data.nonceStr, // 必填，生成签名的随机串
+            signature: data.signature,// 必填，签名，见附录1
+            jsApiList : ['scanQRCode'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+        });
+
+        document.querySelector('#scanQRCode1').onclick = function () {
+            wx.scanQRCode({
+                needResult: 1,
+                desc: 'scanQRCode desc',
+                success: function (res) {
+                    app.Inetwork(res.resultStr.replace('http://qr.zayata.com/qr/',''));
+                    app.device=res.resultStr.replace('http://qr.zayata.com/qr/','');
+                    // alert(JSON.stringify(res));
+                }
+            });
+        };
+
+    })
+        .fail(function () {
+            console.log("error");
+        });
+
+
+
+</script>
+</body>
+
+</html>
+

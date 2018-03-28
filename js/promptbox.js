@@ -1,0 +1,43 @@
+:
+access_token
+    :
+    "MTUwODkxNjQwNrq4hriaZZ9-xmucf8Sbj5e5pnGdfWelsbeyc3Y"
+birthday
+    :
+    "0000-00-00"
+bonded
+    :
+    0
+city
+    :
+    ""
+country
+    :
+    ""
+country_code
+    :
+    ""
+email
+    :
+    "344085688@qq.com"
+headimgurl
+    :
+    ""
+mobile
+    :
+    ""
+nickname
+    :
+    "344085688@qq.com"
+province
+    :
+    ""
+sex
+    :
+    "0"
+uid
+    :
+    "56"
+__proto__
+    :
+    Object

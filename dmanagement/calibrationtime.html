@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <script src="../js/jsonAjax.js"></script>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/calibrationtime.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/choice.js"></script>
+    <script src="../js/jstz-1.0.4.min.js"></script>
+    <link href="../css/choice.min.css" rel="stylesheet" type="text/css"/>
+    <style>
+   </style>
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav @click="goback"><img src="../imgs/arrow_left.png"></nav>
+        <nav>设备操作</nav>
+        <nav></nav>
+    </header>
+    <section>
+
+        <dl  :class="{'dls':timesoff==true}" v-show="indexof('1014')">
+            <dd>自动校准时间</dd>
+            <dd>
+                <div class="switchbox">
+                    <div class="switch" @click="onandoff(is_automatic)">
+                        <div class="bagcol " :class="{ bgopen:is_automatic==1}"></div>
+                        <div class="open" :class="{ openright:is_automatic==1}"></div>
+                    </div>
+                </div>
+            </dd>
+        </dl>
+        <dl  :class="{'dls':timesoff==true}"  v-show="indexof('c101')">
+            <dd>手动校准时间</dd>
+            <dd class="color" @click="manualtime"><img src="../imgs/arrow_right.png"/></dd>
+        </dl>
+
+<!--
+        <dl  :class="{'dls':miandroff==true}">
+            <dd>免打扰模式</dd>
+            <dd>
+                <div class="switchbox">
+                    <div class="switch" @click="miandrmsonoff()">
+                        <div class="bagcol " :class="{ bgopen:miandrmsoff==1}"></div>
+                        <div class="open" :class="{ openright:miandrmsoff==1}"></div>
+                    </div>
+                </div>
+            </dd>
+        </dl>
+        <dl v-show="miandrmsoff==1" :class="{'dls':miandroff==true}">
+            <dd>开始时间</dd>
+            <dd ><input type="text"  class="datddlbg" id="stendatatime" :placeholder="unfazed.unfazed_start"> </dd>
+        </dl>
+        <dl v-show="miandroff==true&&miandrmsoff==1" :class="{'dls':miandroff==true}">
+            <dd>结束时间</dd>
+            <dd class="color"><input type="text" class="datddlbg" id="enddatatime" :placeholder="unfazed.unfazed_end"></dd>
+        </dl>-->
+        <dl v-show="indexof('a001')">
+            <dd>重启设备</dd>
+            <dd class="color" @click="congqisb"><img src="../imgs/arrow_right.png"/></dd>
+        </dl>
+        <dl v-show="indexof('a103')">
+            <dd>药盘复位</dd>
+            <dd class="color" @click="yaophw"><img src="../imgs/arrow_right.png"/></dd>
+        </dl>
+    </section>
+
+        <div class="popup" v-if="popupSetup && role!=2">
+            <div class="editor_box">
+                <div class="editor">确定手动校准？
+                    <div class="determination" @click="DetermineSetup">确定</div>
+                    <div class="cancelled" @click="CancelSettings">取消</div>
+                </div>
+
+            </div>
+        </div>
+    <div class="popup" v-if="yaophwoff && role!=2">
+        <div class="editor_box">
+            <div class="editor">确定药盘复位？
+                <div class="determination" @click="yaophwSetup">确定</div>
+                <div class="cancelled" @click="CancelSettings">取消</div>
+            </div>
+        </div>
+    </div>
+    <div class="popup" v-if="congqisboff && role!=2">
+        <div class="editor_box">
+            <div class="editor">确定重启设备？
+                <div class="determination" @click="congqisbSetup">确定</div>
+                <div class="cancelled" @click="CancelSettings">取消</div>
+            </div>
+        </div>
+    </div>
+    <aside>
+        <div class="popush" v-if="titletime" v-html="datatime">
+        </div>
+    </aside>
+
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            role:0,
+            timesoff:false,
+            yaophwoff:false,
+            congqisboff:false,
+            miandroff:false,
+            miandrmsoff:0,
+            is_automatic:0,
+            manual:0,
+            titletime:false,
+            popupSetup:false,
+            datatime:'',
+            miandrswitch:false,
+            unfazed:{},
+            unfazed_end:'',
+            unfazed_start:'',
+            showdash:[]
+
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var myurl = GetQueryString("device_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id = Number(GetQueryString("device_id").substr(1));
+            }
+            else {
+                window.location.href = golinks("");
+            }
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.role =Number(GetQueryString("role").substr(1));
+            }
+            else {
+                window.location.href =golinks("");
+            }
+            var token = GetQueryString("token");
+            if (token != null && role.toString().length > 1) {
+                _this.token =GetQueryString("token").substr(1);
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var uid = GetQueryString("uid");
+            if (uid != null && role.toString().length > 1) {
+                _this.uid = Number(GetQueryString("uid").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            _this.dtcs(_this.device_id)
+                //接口名称 21 获取时间自动校准设置√
+                jsonAjax('/Home/Device/get_device_adjust_time_config',
+                    {
+                        access_token: _this.token,
+                        device_id: _this.device_id,
+                        uid: _this.uid}
+                ).done(function (data) {
+                    if(data.code==40002){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code==40010){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code ==0){
+                        console.log("ddddddd")
+                        console.log(data)
+                        _this.is_automatic=Number(data.data.is_automatic);
+                    }
+
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                //接口名称 31 设备参数获取与设置
+                jsonAjax('/Home/Device/device_params',
+                    {
+                        access_token: _this.token,
+                        device_id: _this.device_id,
+                        uid: _this.uid}
+                ).done(function (data) {
+                    if(data.code==40002){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code==40010){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code ==0){
+                        _this.unfazed=data.data;
+                        _this.miandrmsoff=Number(data.data.unfazed_switch)
+                        console.log(data)
+
+                    }
+
+
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+
+
+        },
+        methods: {
+            dtcs:function (e) {
+                var _this=this;
+                jsonAjax('/Home/Device/dynamic_device_params',
+                    {access_token:this.token,device_id:e, uid:this.uid}
+                ).done(function (data) {
+                    console.log(data.data)
+                    for(var i in data.data){
+                        _this.showdash.push(data.data[i].tag)
+                    }
+
+                });
+            },
+            indexof:function (item) {
+                if(this.showdash.indexOf(item)==-1){
+                    return false;
+                }else {
+                    return true;
+                }
+            },
+            miandronoff:function () {
+                this.miandroff=!this.miandroff;
+            },
+            timesonoff:function () {
+                this.timesoff=!this.timesoff;
+            },
+            miandrmsonoff:function () {
+                var _this=this;
+                this.miandrmsoff=!this.miandrmsoff;
+                this.miandrswitch=!this.miandrswitch;
+                console.log(this.miandrswitch)
+                var offon;
+               if(!this.miandrmsoff){
+                   offon=0
+               }else {
+                   offon=1
+               }
+                console.log(offon)
+                console.log(this.miandrmsoff)
+                jsonAjax('/Home/Device/device_params',
+                    {
+                        access_token: _this.token,
+                        device_id: _this.device_id,
+                        uid: _this.uid,
+                        unfazed_start:_this.unfazed.unfazed_start,
+                        unfazed_end:_this.unfazed.unfazed_end,
+                        unfazed_switch:offon,
+                    }
+                ).done(function (data) {
+                    console.log(data)
+                    _this.titletime=true;
+                    _this.datatime=data.msg;
+                    setTimeout(function () {
+                        _this.titletime=false;
+                    },1200)
+                    _this.miandrswitch=Number(data.data.unfazed_switch);
+                   // app.unfazed_end=inst._value;
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            },
+            yaophw:function () {
+                this. yaophwoff=true;
+
+            },
+            congqisb:function () {
+                this.congqisboff=true;
+            },
+            onandoff:function (numll) {
+                var _this=this;
+                var today = new Date().getTimezoneOffset()/60;
+                _this.timezone="GMT+0"+(-today)+":00";
+                _this.region=jstz.determine().name();
+                if(numll==0){
+                    _this.is_automatic=1;
+                    _this.manual=1;
+                }else {
+                    _this.is_automatic=0;
+                    _this.manual=2;
+                }
+
+                //04 时间校准设置√
+                jsonAjax('/Home/Device/adjust_time',
+                    {
+                        access_token: _this.token,
+                        device_id: _this.device_id,
+                        is_automatic:_this.is_automatic,
+                        time_zone_district: _this.region,
+                        time_zone_str: _this.timezone,
+                        type: _this.manual,
+                        uid: _this.uid
+                    }
+                ).done(function (data) {
+                    console.log(data);
+                    //console.log(_this.manual);
+                    _this.titletime=true;
+                    _this.datatime=data.msg;
+                    setTimeout(function () {
+                        _this.titletime=false;
+                    },1200)
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+            },
+            manualtime:function () {
+                this.popupSetup=true;
+            },
+            DetermineSetup:function () {
+                var _this=this;
+                var today = new Date().getTimezoneOffset()/60;
+                _this.timezone="GMT+0"+(-today)+":00";
+                _this.region=jstz.determine().name();
+                _this.is_automatic=0;
+                _this.manual=2;
+                jsonAjax('Home/Device/adjust_time',
+                    {access_token: _this.token,
+                        device_id: _this.device_id,
+                        is_automatic:_this.is_automatic,
+                        type: _this.manual,
+                        time_zone_district: _this.region,
+                        time_zone_str: _this.timezone,
+                        uid: _this.uid}
+                ).done(function (data) {
+                    console.log(data);
+                    _this.titletime=true;
+                    _this.datatime=data.data.time;
+                    setTimeout(function () {
+                        _this.titletime=false;
+                    },1200)
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                this.popupSetup=false;
+            },
+            yaophwSetup:function () {
+                var _this=this;
+                //接口名称 29 药盒复位
+                jsonAjax('Home/Device/device_reset',
+                    {access_token: _this.token,
+                        device_id: _this.device_id,
+                        uid: _this.uid}
+                ).done(function (data) {
+                    console.log(data);
+                    _this.titletime=true;
+                    _this.datatime="药盒复位成功！";
+                    setTimeout(function () {
+                        _this.titletime=false;
+                    },1200)
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                this.yaophwoff=false;
+            },
+            congqisbSetup:function () {
+                var _this=this;
+                //接口名称 10 清除数据/重启设备√
+                jsonAjax('Home/Device/clear_device',
+                    {   access_token: _this.token,
+                        device_id: _this.device_id,
+                        type: 1,
+                        uid: _this.uid}
+                ).done(function (data) {
+                    console.log(data);
+                    _this.titletime=true;
+                    _this.datatime="设备重启成功！";
+                    setTimeout(function () {
+                        _this.titletime=false;
+                    },1200)
+
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+                this.congqisboff=false;
+            },
+            CancelSettings:function () {
+                this.popupSetup=false;
+                this.congqisboff=false;
+                this. yaophwoff=false;
+            },
+            goback: function () {
+                window.location.href = golinks("dmanagement/devicedetails.html?token="+this.token+"&uid="+this.uid+"&device_id=" + this.device_id +"&role="+this.role+"&off=1");
+            }
+
+        }
+
+    });
+
+
+</script>
+</body>
+
+</html>
+

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jsonAjax.js"></script>
+
+</head>
+<body>
+<script type="text/javascript">
+    (function () {
+        setTimeout(function(){
+            getStages('user');
+        },100);
+        setTimeout(function(){
+            if(!BooleanStages){
+                window.location.href=golinks("weixinsq.html");
+            }else {
+                console.log(StagesDatas.usermsg.access_token)
+                //接口名称 11 根据用户ID获取设备列表√
+                jsonAjax("/Home/Device/get_device_list_by_uid",
+                    {
+                        access_token:StagesDatas.usermsg.access_token,
+                        uid:StagesDatas.usermsg.uid
+                    }
+                ).done(function (data) {
+                    if(data.data.length==0){
+                        window.location.href = golinks("associateddevice/wifinetwork.html");
+                    }else {
+                        var usermsg=[{
+                            keyname:"device_ids",
+                            usermsg:data.data
+                        }];
+                        setstages(usermsg);
+                        window.location.href = golinks("index.html");
+                    }
+
+
+
+                })
+                    .fail(function () {
+                        alert("error");
+                    });
+            }
+        },200);
+    })();
+</script>
+</body>
+
+</html>
+

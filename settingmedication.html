@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <script src="js/jsonAjax.js"></script>
+    <link rel="stylesheet" href="css/myequipment.css">
+    <link rel="stylesheet" href="css/settingmedication.css?version=1.2">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/fontzize.js"></script>
+    <script src="js/choice.min.js"></script>
+    <link href="css/choice.min.css" rel="stylesheet" type="text/css"/>
+    <script src="js/vue.min.js"></script>
+
+</head>
+<body>
+<div id="app">
+    <dl class="prdldl">
+        <dd>闹钟开关</dd>
+        <dd class="prdl">
+            <div class="switchbox">
+                <div class="switch" @click="onandoff(mockdata.status)">
+                    <div class="bagcol " :class="{ bgopen:mockdata.status==1}"><!----></div>
+                    <div class="open" :class="{ openright:mockdata.status==1}"><!----></div>
+                </div>
+            </div>
+
+        </dd>
+    </dl>
+    <article>
+        <input id="Remindertime" style="display: none;" v-model="mockdata.alarm_time"/>
+      <!--  <div class="titles">闹钟开关</div>-->
+    </article>
+    <section>
+        <dl>添加药品</dl>
+        <dl v-for="(item,index) in mockdata.drugs">
+            <dt @click="bianjidrgs(item,index)"><img :src="item.drug_imgurl" alt="" v-if="item.drug_imgurl"></dt>
+            <!-- -->
+            <dd v-html="item.drug_name" @click="bianjidrgs(item,index)"></dd>
+
+            <dd v-html="item.drug_amount" @click="bianjidrgs(item,index)"
+                style="text-align: right; padding-right: 8px; box-sizing: border-box;"></dd>
+            <dd @click="remouedrgs(index)"><img src="imgs/deledrs.png" alt=""></dd>
+        </dl>
+        <ul class="addcar_box">
+            <li><img :src="mockDrugs.drug_imgurl" alt=""><input type="button" @click="take_a_photo(1)"></li>
+            <li>
+                <input class="saosao" type="button" id="scanQRCode1">
+                <input type="text" v-model="mockDrugs.drug_name">
+                <input type="button" id="changnuber" :value="mockDrugs.drug_amount"/>
+            </li>
+        </ul>
+        <ul class="ol">
+            <li><input type="button" class="dsinppus" value="继续添加" @click="addDrugs"  >
+            </li>
+            <li><input type="button"  class="dsinphost" :value="DrugRecords" @click="hostPopup" :disabled="DrugRecordssty"
+                       :class="{dsinputhost:DrugRecordssty}"></li>
+        </ul>
+        <ul class="beizhu">
+
+            <li>
+                <textarea type="text" v-model="mockdata.remark" placeholder="备注" ></textarea>
+            </li>
+        </ul>
+        <ul class="beizhu">
+            <input type="button" class="signin signinup" value="确定" @click="submineTij">
+        </ul>
+        <dl></dl>
+
+    </section>
+    <div class="article_box" v-if="medication19">
+        <div class="housttitle">历史闹钟</div>
+        <article class="artimt" v-for="(item ,index) in medication19" v-if="item.status==1">
+            <div class="times" v-html="item.alarm_time"></div>
+            <div class="bjbox" @click="bianjinz(item)">立即应用</div>
+         <div class="ulbox " v-if="medication19[index].drugs.length>0">
+                <div class="container" :style="{width:(210*medication19[index].drugs.length)/750+'rem'}">
+                    <div class="wrapper" v-for="msg in item.drugs">
+                        <div class="box">
+                            <div class="imgbox">
+                                <img :src="msg.drug_imgurl" v-if="msg.drug_imgurl">
+                            </div>
+                            <div class="name" v-html="msg.drug_name"></div>
+                            <div class="nuber">数量 <span v-html="msg.drug_amount">2</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ulbox " v-if="medication19[index].drugs.length<=0">
+                <div class="container" >
+                            <div class="wrapper boxtree">
+                                <div class="box">
+                                    <div class="imgbox">
+                                    </div>
+                                    <div class="name" >药品名称</div>
+                                    <div class="nuber">数量 </div>
+                                </div>
+
+                            </div>
+                            <div class="wrapper boxtree">
+                                <div class="box">
+                                    <div class="imgbox">
+                                    </div>
+                                    <div class="name" >药品名称</div>
+                                    <div class="nuber">数量 </div>
+                                </div>
+
+                            </div>
+                            <div class="wrapper boxtree">
+                                <div class="box">
+                                    <div class="imgbox">
+                                    </div>
+                                    <div class="name" >药品名称</div>
+                                    <div class="nuber">数量 </div>
+                                </div>
+
+                            </div>
+                </div>
+            </div>
+            <div class="tishi" v-if="item.remark==''">备注：暂无</div>
+            <div class="tishi"  v-if="item.remark!=''">备注：{{item.remark}}</div>
+        </article>
+    </div>
+    <div class="Popup" :class="{'paddingtop':popupHost}">
+        <div class="pr">
+            <div class="chang_box">
+                <div class="swiper-container">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide" v-for="(item, index) in mockhostdrugs"
+                             @click="swiperclick(item,index)">
+                            <div class="imgbox">
+                                <img :src="item.drug_imgurl" v-if="item.drug_imgurl!=''">
+                            </div>
+                            <div class="name" v-html="item.drug_name"></div>
+                        </div>
+                    </div>
+                    <!-- Add Scrollbar -->
+                    <div class="swiper-scrollbar"></div>
+                </div>
+            </div>
+            <input type="button" value="取消" @click="hostPopup">
+        </div>
+    </div>
+    <div class="popuparticle" v-html="tishi" v-if="tishidisa"></div>
+    <div class="modify" v-show="modifys" >
+        <header>
+            <nav @click="modifys=false"><img src="../imgs/arrow_left.png"></nav>
+            <nav>编辑药品</nav>
+            <nav></nav>
+        </header>
+        <div class="database">
+
+            <div class="baseimg">
+                <div class="imgbox"><img :src="mockDrugsda.drug_imgurl" alt="">
+                    <input type="button" class="imgboxwx" @click="take_a_photo(2)"></div>
+            </div>
+            <div class="base">上传药品图</div>
+        </div>
+        <ul>
+            <li>药品名称</li>
+            <li><input type="text" v-model="mockDrugsda.drug_name" >
+                <input class="saosao" type="button" id="scanQRCode2"></li>
+        </ul>
+        <ul>
+            <li>药品数量</li>
+            <li><input type="text" id="changnuber2" :value="mockDrugsda.drug_amount"></li>
+        </ul>
+        <input type="button" class="signin" value="确定提交" @click="modifyadd">
+    </div>
+</div>
+
+<script src="js/swiper.min.js"></script>
+<link rel="stylesheet" href="css/swiper.min.css">
+<script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+<script>
+    var pageid;
+    var uid;
+    var dataitem;//编辑药品取消前数据
+    var now = new Date(),
+        max = new Date(now.getFullYear() + 10, now.getMonth(), now.getDate());
+    var currYear = (new Date()).getFullYear();
+    var currMonth = (new Date()).getMonth();
+    var currDay = (new Date()).getDate();
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            mockdata: {
+                access_token: "",
+                alarm_id: 0,
+                alarm_time: null,
+                cid: null,
+                device_id: null,
+                drugs: [
+
+                ],
+                plan_id: 0,
+                remark: "",
+                status: 1,
+                uid: null
+            },//模拟数据
+            medication19: {
+                alarmclock: [
+                    {
+                        alarm_time: "",
+                        drugs: [
+                            {drug_amount: "", drug_name: ""}
+                        ],
+                        emark: "",
+                        status: ""
+                    }
+                ]
+
+            },
+            mockhostdrugs: [],
+            mockDrugs: {
+                drug_imgurl: "",
+                drug_name: "",
+                drug_amount:1
+            },
+            mockDrugsda: {
+                drug_imgurl: "",
+                drug_name: "",
+                drug_amount: 1
+            },
+            thisPlan_id: '',
+            popupHost: false,
+            DrugRecords: '药品记录',
+            DrugRecordssty: false,
+            tishidisa: false,
+            tishi: "",
+            xiugai: null,
+            modifys:false,
+            modifyindex:100
+        },
+        computed: {
+            submineDrug: function () {
+                if (this.mockdata.drugs.length > 0) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+
+            var plan_id = GetQueryString("plan_id");
+            if (plan_id != null && plan_id.toString().length > 1) {
+                this.plan_id = GetQueryString("plan_id").substr(1);
+            }
+            else {
+
+            }
+
+            var cid = GetQueryString("cid");
+            if (cid != null && cid.toString().length > 1) {
+                this.cid = GetQueryString("cid").substr(1);
+
+            }
+
+            else {
+
+            }
+            var device_id = GetQueryString("device_id");
+            if (device_id != null && device_id.toString().length > 1) {
+                this.device_id = GetQueryString("device_id").substr(1);
+            }
+            else {
+            }
+            var alarm_id = GetQueryString("alarm_id");
+            if (alarm_id != null && alarm_id.toString().length > 1) {
+                this.alarm_id = GetQueryString("alarm_id").substr(1);
+            }
+            else {
+            }
+            var alarm_time = GetQueryString("alarm_time");
+            if (alarm_time != null && alarm_time.toString().length > 1) {
+                this.mockdata.alarm_time = GetQueryString("alarm_time").substr(1);
+
+            }
+            else {
+                this.mockdata.alarm_time = "00:00"
+            }
+            var token = GetQueryString("token");
+            if (token != null && token.toString().length > 1) {
+                this.token = (GetQueryString("token").substr(1));
+
+            }
+            else {
+                //window.location.href = golinks("");
+            }
+            var uid = GetQueryString("uid");
+            if (uid != null && uid.toString().length > 1) {
+                _this.uid = (GetQueryString("uid").substr(1));
+
+            }
+            else {
+                //window.location.href = golinks("");
+            }
+            var row = GetQueryString("row");
+            if (row != null && row.toString().length > 1) {
+                _this.row = (GetQueryString("row").substr(1));
+
+            }
+            else {
+                //window.location.href = golinks("");
+            }
+            _this.mockdata.access_token = this.token;
+            _this.mockdata.uid = this.uid;
+            _this.mockdata.cid = _this.cid;
+            _this.mockdata.row = _this.row;
+            _this.mockdata.device_id = _this.device_id;
+            _this.mockdata.plan_id = _this.plan_id;
+            _this.mockdata.alarm_id = _this.alarm_id;
+
+            ////接口名称 19 获取设备的服药计划√
+            jsonAjax('/Home/device/get_device_plan_new',
+                {access_token: _this.token, device_id: _this.device_id, uid: _this.uid}
+            ).done(function (data) {
+
+                if (_this.alarm_id != 0) {
+                    var alarmid = [];
+                    for (var i = 0; i < data.data.alarmclock.length; i++) {
+                        alarmid.push(Number(data.data.alarmclock[i].alarm_id));
+                    }
+                    var index = alarmid.indexOf(Number(_this.alarm_id));
+                    _this.mockdata.status=data.data.alarmclock[index].status;
+                    _this.mockdata.remark = data.data.alarmclock[index].remark;
+                    _this.mockdata.drugs = data.data.alarmclock[index].drugs;
+                }
+                //全局改变状态
+            })
+                .fail(function () {
+                    console.log("error");
+                });
+
+            //接口名称 20 最近添加药品√
+            jsonAjax('/Home/Device/recent_drugs',
+                {access_token: _this.mockdata.access_token, cid: _this.mockdata.cid, uid: _this.mockdata.uid}
+            ).done(function (data) {
+                console.log(data)
+                if(data.data){
+                    if (data.data.length < 0) {
+                        _this.DrugRecordssty = true;
+                        _this.DrugRecords = "最近无药品记录";
+                    } else if (data.data.length > 0) {
+                        _this.DrugRecordssty = false;
+                        _this.DrugRecords = "药品记录";
+                        _this.mockhostdrugs = data.data;
+
+                        //全局改变状态
+                    }
+                }
+            })
+                .fail(function () {
+                    console.log("error");
+                });
+
+            _this.getMedi19(_this.device_id);
+            setTimeout(function () {
+                _this.settimesdata();
+            }, 100)
+        },
+        methods: {
+            getMedi19: function (decid) {
+                var _this = this;
+                console.log(_this.token);
+                console.log(decid);
+                console.log(_this.uid);
+                //接口名称 34 获取历史闹钟
+                jsonAjax('/Home/Device/get_alarmclock_history',
+                    {access_token: _this.token, uid: _this.uid}
+                ).done(function (data) {
+
+                    if (data.code == 30024) {
+
+                    } else {
+                        _this.medication19 = data.data;
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+
+
+            },
+            swiperclick: function (item, index) {
+                this.mockDrugs.drug_imgurl = item.drug_imgurl;
+                this.mockDrugs.drug_amount = '';
+                this.mockDrugs.drug_name = item.drug_name;
+                this.popupHost = false;
+            },
+            bianjidrgs: function (item, index) {
+                //  mockDrugs
+                this.modifyindex=index;
+                this.mockDrugsda.drug_amount=item.drug_amount;
+                this.mockDrugsda.drug_imgurl=item.drug_imgurl;
+                this.mockDrugsda.drug_name=item.drug_name;
+                this.modifys=true;
+
+            },
+            modifyadd:function () {
+                this.modifys=false;
+                this.mockdata.drugs[this.modifyindex].drug_amount=this.mockDrugsda.drug_amount;
+                this.mockdata.drugs[this.modifyindex].drug_imgurl=this.mockDrugsda.drug_imgurl;
+                this.mockdata.drugs[this.modifyindex].drug_name=this.mockDrugsda.drug_name;
+
+
+            },
+            remouedrgs: function (index) {
+                this.mockDrugs.drug_imgurl = "";
+                this.mockDrugs.drug_name = '';
+                this.mockDrugs.drug_amount = 1;
+                this.mockdata.drugs.splice(index, 1);
+            },
+            addDrugs: function () {
+                var _this = this;
+                    if (this.mockDrugs.drug_name != "" || this.mockDrugs.drug_imgurl != "") {
+                        if(this.mockDrugs.drug_amount != null&&this.mockDrugs.drug_amount != ""){
+                            if(this.mockDrugs.drug_name != "" ){
+                                this.mockdata.drugs.push({
+                                    drug_imgurl: this.mockDrugs.drug_imgurl,
+                                    drug_amount: this.mockDrugs.drug_amount,
+                                    drug_name: this.mockDrugs.drug_name
+                                });
+                            }else {
+                                this.mockdata.drugs.push({
+                                    drug_imgurl: this.mockDrugs.drug_imgurl,
+                                    drug_amount: this.mockDrugs.drug_amount,
+                                    drug_name: "未知药品"
+                                });
+                                /*if(this.mockdata.drugs.length==0){
+                                    this.mockdata.drugs.push({
+                                        drug_imgurl: this.mockDrugs.drug_imgurl,
+                                        drug_amount: this.mockDrugs.drug_amount,
+                                        drug_name: "未知药品"
+                                    });
+                                }*/
+                                /*else {
+                                    for(var key  in this.mockdata.drugs){
+                                        if(this.mockdata.drugs[key].drug_name=="未知药品"){
+                                            this.tishidisa = true;
+                                            this.tishi = '请先录入药品名';
+                                            setTimeout(function () {
+                                                _this.tishidisa = false;
+                                            }, 800)
+                                            return false;
+                                        }else {
+                                            this.mockdata.drugs.push({
+                                                drug_imgurl: this.mockDrugs.drug_imgurl,
+                                                drug_amount: this.mockDrugs.drug_amount,
+                                                drug_name: "未知药品"
+                                            });
+                                        }
+                                    }
+                                }*/
+                            }
+                            this.mockDrugs.drug_imgurl = "";
+                            this.mockDrugs.drug_name = '';
+                            this.mockDrugs.drug_amount = 1;
+                        }else {
+                            if(this.mockDrugs.drug_name != "" ){
+                                this.mockdata.drugs.push({
+                                    drug_imgurl: this.mockDrugs.drug_imgurl,
+                                    drug_amount:1,
+                                    drug_name: this.mockDrugs.drug_name
+                                });
+                            }else {
+                                this.mockdata.drugs.push({
+                                    drug_imgurl: this.mockDrugs.drug_imgurl,
+                                    drug_amount: 1,
+                                    drug_name: "未知药品"
+                                });
+                            }
+                            this.mockDrugs.drug_imgurl = "";
+                            this.mockDrugs.drug_name = '';
+                            this.mockDrugs.drug_amount = 1;
+                        }
+                    }else {
+                        this.tishidisa = true;
+                        this.tishi = '请先录入药品名';
+                        setTimeout(function () {
+                            _this.tishidisa = false;
+                        }, 800)
+                    }
+
+            },
+            hostPopup: function () {
+                console.log("sss")
+                this.popupHost = !this.popupHost;
+
+            },
+            onandoff: function (numll) {
+                var _this = this;
+                if (numll == 0) {
+                    _this.mockdata.status = 1;
+
+                } else {
+                    _this.mockdata.status = 0;
+                }
+                console.log(_this.mockdata.status)
+
+            },
+            bianjinz: function (item) {
+                this.mockdata.alarm_time = item.alarm_time;
+                this.mockdata.drugs = item.drugs;
+                this.mockdata.remark = item.remark;
+                this.mockdata.status = item.status;
+                this.mockdata.alarm_time = item.alarm_time;
+                var _this = this;
+                document.body.scrollTop = 0;
+                setTimeout(function () {
+                    _this.settimesdata();
+                }, 100)
+            },
+            submineTij: function () {
+                var _this = this;
+               if (this.mockDrugs.drug_name != "" || this.mockDrugs.drug_imgurl != "") {
+                   if(this.mockDrugs.drug_amount != null&&this.mockDrugs.drug_amount != ""){
+                        if(this.mockDrugs.drug_name != "" ){
+                            this.mockdata.drugs.push({
+                                drug_imgurl: this.mockDrugs.drug_imgurl,
+                                drug_amount: this.mockDrugs.drug_amount,
+                                drug_name: this.mockDrugs.drug_name
+                            });
+                            this.setapi27();
+                        }else {
+                            this.mockdata.drugs.push({
+                                drug_imgurl: this.mockDrugs.drug_imgurl,
+                                drug_amount: this.mockDrugs.drug_amount,
+                                drug_name: "未知药品"
+                            });
+                            this.setapi27();
+                           /* if(this.mockdata.drugs.length==0){
+                                this.mockdata.drugs.push({
+                                    drug_imgurl: this.mockDrugs.drug_imgurl,
+                                    drug_amount: this.mockDrugs.drug_amount,
+                                    drug_name: "未知药品"
+                                });
+                                this.setapi27();
+                            }else {
+                                for(var key  in this.mockdata.drugs){
+                                    if(this.mockdata.drugs[key].drug_name=="未知药品"){
+                                        this.tishidisa = true;
+                                        this.tishi = '请先录入药品名';
+                                        setTimeout(function () {
+                                            _this.tishidisa = false;
+                                        }, 800)
+                                        return false;
+                                    }else {
+                                        this.mockdata.drugs.push({
+                                            drug_imgurl: this.mockDrugs.drug_imgurl,
+                                            drug_amount: this.mockDrugs.drug_amount,
+                                            drug_name: "未知药品"
+                                        });
+                                        this.setapi27();
+                                    }
+                                }
+                            }*/
+
+                        }
+                        this.mockDrugs.drug_imgurl = "";
+                        this.mockDrugs.drug_name = '';
+                        this.mockDrugs.drug_amount = 1;
+                    }else {
+                       if(this.mockDrugs.drug_name != "" ){
+                           this.mockdata.drugs.push({
+                               drug_imgurl: this.mockDrugs.drug_imgurl,
+                               drug_amount: 1,
+                               drug_name: this.mockDrugs.drug_name
+                           });
+                           this.setapi27();
+                       }else {
+                           this.mockdata.drugs.push({
+                               drug_imgurl: this.mockDrugs.drug_imgurl,
+                               drug_amount: 1,
+                               drug_name: "未知药品"
+                           });
+                           this.setapi27();
+                       }
+                       this.mockDrugs.drug_imgurl = "";
+                       this.mockDrugs.drug_name = '';
+                       this.mockDrugs.drug_amount = 1;
+                    }
+                }else {
+                   this.setapi27();
+
+               }
+            },
+            setapi27:function () {
+                var _this = this;
+                if (_this.mockdata.alarm_time == '00:00') {
+                    _this.tishidisa = true;
+                    _this.tishi = '请设置闹钟时间';
+                } else {
+                    //接口名称 27 编辑设备服药计划的闹钟设置（api-version：1.1）
+                    jsonAjax('/Home/Device/modify_device_alarmclock_new',
+                        JSON.stringify(_this.mockdata
+                        )
+                    ).done(function (data) {
+
+                        console.log(data)
+                        if(data.code == 20001){
+                            _this.tishidisa= true;
+                            _this.tishi =data.msg;
+                            setTimeout(function () {
+                                _this.tishidisa= false;
+                            },1200)
+                        }else if (data.code == 30024) {
+                            _this.tishidisa= true;
+                            _this.tishi =data.msg;
+                            setTimeout(function () {
+                                _this.tishidisa= false;
+                            },1200)
+                        }else if (data.code == 0) {
+                            window.location.href = golinks("medicationplan.html?devicid=" + _this.mockdata.device_id + "&cid=" + _this.mockdata.cid + "&alarmclock_id=" + data.data.alarmclock_id + "&role=1");
+                        } else {
+
+                        }
+                    })
+                        .fail(function () {
+                            console.log("error");
+                        });
+                }
+            },
+            take_a_photo: function (item) {
+                //拍照或从手机相册中选图接口
+                wx.chooseImage({
+                    count: 1, // 默认9
+                    sizeType: ['original'],
+                    sourceType: ['album', 'camera'],
+                    success: function (res) {
+                        var localId = res.localIds[0];//选择图片成功，上传到微信服务器
+                        wx.getLocalImgData({
+                            localId: localId,
+                            success: function (res) {
+                                var localData = res.localData;
+
+                                localData = localData.replace('jgp', 'jpeg');
+
+                                var dataurl;
+                                if (localData.indexOf('base64') < 0) {
+                                    dataurl = 'data:image/jpeg;base64,' + localData;
+                                } else {
+                                    dataurl = localData;
+                                }
+                                var imgs = {};
+                                imgs["file[0]"] = dataurl;
+                                $.ajax({
+                                    url: 'http://api.zayata.com/index.php?s=/Home/File/uploadPicture',
+                                    type: 'POST',
+                                    data: imgs,
+
+                                }).done(function (data) {
+                                    //alert(data.data[0].imgurl)
+                                    if(item==1){
+                                        app.mockDrugs.drug_imgurl = data.data[0].imgurl;
+                                    }else if(item==2){
+                                        app.mockDrugsda.drug_imgurl = data.data[0].imgurl;
+                                    }
+
+                                })
+                                    .fail(function () {
+                                        console.log("error");
+                                    });
+                            }
+                        })
+
+                    }
+                })
+            },
+            settimesdata: function (item) {
+                $('#Remindertime').choice().time({
+                    theme: 'ios',
+                    lang: 'zh',
+                    display: 'inline',
+                    wheelOrder: 'hhii',
+                    timeFormat: 'HH:ii',
+                    timeWheels: 'HHii',
+                    minWidth: 200,
+                    onSet: function (event, inst) {
+                        app.mockdata.alarm_time = inst._value;
+
+                    }
+                });
+
+            }
+
+        },
+
+
+    });
+
+
+     var wheel = [
+        [{data: ['0.5', '1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5', '5.5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30']}]
+    ];
+    $('#changnuber').choice().scroller({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        wheels: wheel,
+        minWidth: 200,
+        onChange: function (valueText, inst) {
+            console.log("ssss")
+        },
+        onSet: function (event, inst) {
+            app.mockDrugs.drug_amount = inst._wheelArray[0];
+        }
+    });
+    $('#changnuber2').choice().scroller({
+        theme: 'ios',
+        lang: 'zh',
+        display: 'bottom',
+        wheels: wheel,
+        minWidth: 200,
+        onChange: function (valueText, inst) {
+            console.log("ssss")
+        },
+        onSet: function (event, inst) {
+            app.mockDrugsda.drug_amount = inst._wheelArray[0];
+        }
+    });
+
+    $.ajax({
+        type: "post",
+        url: 'http://gh.zayata.com/index.php?s=/Ibox/Web/getSdkConf',
+        data: {url: window.location.href},
+        dataType: 'json',
+    }).done(function (data) {
+        wx.config({
+            debug: false,
+            appId: data.appId,
+            timestamp: data.timestamp,
+            nonceStr: data.nonceStr,
+            signature: data.signature,
+            jsApiList: ['scanQRCode', 'chooseImage', 'uploadImage', 'downloadImage']
+        });
+
+
+    });
+    document.querySelector('#scanQRCode1').onclick = function () {
+        wx.scanQRCode({
+            needResult: 1,
+            desc: 'scanQRCode desc',
+            success: function (res) {
+                var duanme = res.resultStr.replace('http://qr.zayata.com/qr/', '').substring(7);
+                durname(duanme,1);
+
+            }
+        });
+    };
+   document.querySelector('#scanQRCode2').onclick = function () {
+
+        wx.scanQRCode({
+            needResult: 1,
+            desc: 'scanQRCode desc',
+            success: function (res) {
+                var duanme = res.resultStr.replace('http://qr.zayata.com/qr/', '').substring(7);
+                durname(duanme,2);
+
+            }
+        });
+    };
+
+    function durname(duanme,dash) {
+        $.ajax({
+            type: "post",
+            url: ' https://api.zayata.com/index.php?s=/Home/Device/get_drug_info',
+            data: {drug_code: duanme},
+            dataType: 'json',
+        }).done(function (data) {
+            if(dash==1){
+                app.mockDrugs.drug_name=data.data.drug_name;
+            }else {
+                app.mockDrugsda.drug_name=data.data.drug_name;
+            }
+
+        })
+            .fail(function () {
+
+            });
+
+    }
+    setTimeout(function () {
+        var swiper = new Swiper('.swiper-container', {
+            slidesPerView: 3,
+            spaceBetween: 30,
+            scrollbar: '.swiper-scrollbar',
+            scrollbarHide: false,
+            grabCursor: true
+        });
+    }, 650)
+
+</script>
+
+
+</body>
+
+</html>
+
+
+
+
+
+
+

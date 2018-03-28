@@ -1,0 +1,357 @@
+/**
+我的设备-新增设备-服药计划-关联设备-2017.09.15
+*/
+.vm {
+  vertical-align: middle;
+  display: inline-table;
+}
+.mto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.co {
+  cursor: none;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(255, 0, 0, 0);
+}
+.ipt {
+  box-sizing: border-box;
+  font-size: 1rem ;
+  cursor: none;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(255, 0, 0, 0);
+  -webkit-appearance: none;
+}
+.es {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+}
+.selsty {
+  appearance: none;
+}
+.selsty::-ms-expand {
+  display: none;
+}
+.fexm {
+  display: flex ;
+  flex-direction: row ;
+  flex-wrap: wrap ;
+  justify-content: space-around;
+  align-items: center ;
+  align-content: center ;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  -webkit-justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+}
+.fest {
+  display: flex ;
+  flex-direction: row ;
+  flex-wrap: wrap ;
+  justify-content: flex-start;
+  align-items: center ;
+  align-content: flex-start;
+}
+.scl {
+  -webkit-text-size-adjust: none;
+  -webkit-touch-callout: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.boxsh {
+  box-shadow: 0px 6px 6px rgba(3, 143, 16, 0.49);
+  background: #14cc4c;
+  color: #fff;
+  font-size: 1rem ;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: "Microsoft YaHei";
+  background: #ffffff;
+  -webkit-text-size-adjust: none;
+  -webkit-touch-callout: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0 auto;
+  max-width: 680px;
+  overflow-x: hidden;
+  position: relative;
+  color: #888;
+}
+div {
+  box-sizing: border-box;
+}
+a {
+  text-decoration: none;
+  color: #00cc33;
+}
+a:hover {
+  color: #00cc33;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+body::-webkit-scrollbar {
+  display: none;
+}
+dl,
+ul,
+li,
+dt,
+dd,
+ol {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+li {
+  list-style-type: none;
+}
+#app {
+  position: relative;
+}
+input {
+  -webkit-appearance: none;
+}
+header {
+  height: 3.33333333rem;
+  width: 100%;
+  background-color: #EEEEEE;
+  display: flex;
+}
+header nav {
+  font-size: 1rem ;
+  height: 3.33333333rem;
+  vertical-align: middle;
+  display: inline-table;
+  text-align: center;
+  line-height: 3.33333333rem;
+}
+header nav:nth-of-type(1) {
+  width: 2.66666667rem;
+  height: 3.33333333rem;
+}
+header nav:nth-of-type(1) img {
+  width: 0.56666667rem;
+  height: 1.13333333rem;
+  vertical-align: middle;
+  display: inline-table;
+}
+header nav:nth-of-type(2) {
+  width: 19.66666667rem;
+  position: relative;
+}
+header nav:nth-of-type(2) img {
+  width: 0.73333333rem;
+  height: auto;
+  vertical-align: middle;
+  display: inline-table;
+}
+header nav:nth-of-type(3) {
+  width: 2.66666667rem;
+  height: 2.66666667rem;
+}
+header nav:nth-of-type(3) i {
+  font-size: 1.5rem;
+}
+header nav:nth-of-type(3) img {
+  width: 1.3rem;
+  height: auto;
+  vertical-align: middle;
+  display: inline-table;
+}
+.popuparticle {
+  position: fixed;
+  font-size: 1rem ;
+  border-radius: 0.66666667rem;
+  bottom: 5%;
+  left: 50%;
+  margin-left: -5rem;
+  width: 10rem;
+  height: 2.66666667rem;
+  line-height: 2.66666667rem;
+  text-align: center;
+  background: #ff9567;
+  color: #fff;
+}
+footer {
+  width: 100%;
+  height: 3.33333333rem;
+  border-top: #d1d1d1 solid 1px ;
+  display: flex ;
+  flex-direction: row ;
+  flex-wrap: wrap ;
+  justify-content: space-around;
+  align-items: center ;
+  align-content: center ;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  -webkit-justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  position: fixed;
+  bottom: 0rem;
+  left: 0rem;
+  background: #fff;
+}
+footer nav {
+  flex: 1;
+  height: 3.33333333rem;
+  text-align: center;
+  box-sizing: border-box;
+  font-size: 1rem ;
+  cursor: none;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(255, 0, 0, 0);
+  -webkit-appearance: none;
+}
+.centheader {
+  width: 25rem;
+  height: 3.33333333rem;
+  display: flex ;
+  flex-direction: row ;
+  flex-wrap: wrap ;
+  justify-content: space-around;
+  align-items: center ;
+  align-content: center ;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  -webkit-justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  border-bottom: #14cc4c 1px solid;
+}
+.centheader div {
+  flex: 1;
+  text-align: center;
+  box-sizing: border-box;
+  width: 10.83333333rem;
+  height: 2.66666667rem;
+  line-height: 2.66666667rem;
+}
+.centheader div:nth-of-type(1) {
+  border-right: #14cc4c 1px solid;
+}
+.centheader .active {
+  color: #14cc4c;
+}
+.centheader input {
+  flex: 1;
+  text-align: center;
+  box-sizing: border-box;
+  border-radius: 0rem;
+  width: 10.83333333rem;
+  height: 2.66666667rem;
+  line-height: 2.66666667rem;
+  border: none;
+  background: none;
+  cursor: none;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(255, 0, 0, 0);
+}
+.centheader input:nth-of-type(1) {
+  border-right: #14cc4c 1px solid;
+}
+.signin {
+  box-sizing: border-box;
+  font-size: 1rem ;
+  cursor: none;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(255, 0, 0, 0);
+  -webkit-appearance: none;
+  height: 2.4rem;
+  border-radius: 2.26666667rem;
+  width: 16rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2.66666667rem;
+  margin-bottom: 2rem;
+  background: #a2a2a2;
+  color: #fff;
+  box-shadow: 0px 6px 6px rgba(97, 99, 97, 0.49);
+  display: block;
+  border: none;
+}
+.signinup {
+  box-shadow: 0px 6px 6px rgba(3, 143, 16, 0.49);
+  color: #fff;
+  background: #00cc33;
+}
+.centinput {
+  width: 19.36666667rem;
+  height: 2.8rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.centinput input {
+  width: 19.36666667rem;
+  height: 2.8rem;
+  border: #cacaca solid 1px;
+  border-radius: 0.33333333rem;
+  box-sizing: border-box;
+  font-size: 1rem ;
+  cursor: none;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(255, 0, 0, 0);
+  -webkit-appearance: none;
+  border-radius: 2.26666667rem;
+  padding-left: 1.2rem;
+  padding-right: 1.2rem;
+}
+.lodingboc {
+  position: fixed;
+  top: 0rem;
+  left: 0rem;
+  right: 0rem;
+  bottom: 0rem;
+  background: #FFFFFF;
+  z-index: 10;
+}
+.lodingboc img {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 3.33333333rem;
+  height: 3.33333333rem;
+  margin-top: -1.66666667rem;
+  margin-left: -1.66666667rem;
+  z-index: 12;
+}
+/*我的设备*/
+/*article table{ box-sizing: border-box;margin: 0; padding: 0; border: 0;}*/
+/*服药管理*/
+/*
+article{border-radius:6px;.mt(80);.mto;-moz-box-shadow: 0px 0px 4px rgba(0,0,0,0.1);-webkit-box-shadow: 0px 0px 4px rgba(0,0,0,0.1);box-shadow: 0px 0px 4px rgba(0,0,0,0.1);width: 90%;
+  ol{font-size: 0;padding:0.8rem 0.5rem 0.4rem 0.5rem; overflow: hidden;
+    .msgconnect{display:table-cell; width:100%; font-size: 1rem; padding-bottom:0.4rem;
+      span{ display:block;
+        &:nth-child(even) {font-size: 0.85rem; padding-top: 0.8rem;}
+      }
+    }
+    .arrow{display:table-cell;  vertical-align: middle; text-align: right;cursor: pointer; -webkit-tap-highlight-color: rgba(0,0,0,0);tap-highlight-color: rgba(0,0,0,0);
+       img{ height: 1rem; width: auto; display: inline-block; vertical-align: middle;}
+    }
+
+  }
+}
+*/

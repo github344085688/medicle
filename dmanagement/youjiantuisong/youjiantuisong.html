@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../../css/myequipment.css">
+    <link rel="stylesheet" href="../../css/youjiantuisong.css">
+    <script src="../../js/jquery.min.js"></script>
+    <script src="../../js/fontzize.js"></script>
+    <script src="../../js/vue.min.js"></script>
+    <script src="../../js/jsonAjax.js"></script>
+    <style>
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <header>
+        <nav @click="goback"><img src="../../imgs/arrow_left.png"></nav>
+        <nav>邮件推送提醒</nav>
+        <nav></nav>
+    </header>
+    <section>
+        <div>
+            <ul>
+                <li class="yi" @click="youT_c">邮件地址<img src="../../imgs/arrow_right.png" alt=""></li>
+                <li class="er">超时提醒推送
+                    <div style="float: right;width: 65%;" class="switch clearfix"><p class="s_one"><span class="s_s" @click="jiaoz"></span><input type="hidden" class="s_s_z" value="1"/></p></div>
+                </li>
+                <!-- <li class="san"></li> -->
+                <li class="si">
+                    超时邮件内容
+                    <textarea class="si_t" @keyup="si_t" v-model="si_txt"></textarea>
+                    <span class="si_s">{{si_z}}/150</span>
+                </li>
+                <li class="wu">漏服推送提醒
+                    <div style="float: right;width: 65%;" class="switch01 clearfix"><p class="s_one01"><span class="s_s01" @click="jiaoz01"></span><input type="hidden" class="s_s_z01" value="1"/></p></div>
+                </li>
+                <li class="liu">
+                    漏服邮件内容
+                    <textarea class="liu_t" @keyup="liu_t" v-model="liu_txt"></textarea>
+                    <span class="liu_s">{{liu_z}}/150</span>
+                </li>
+            </ul>
+            <div class="anniu"><button class="btn" @click="que_btn">确定</button></div>
+        </div>
+        <!-- 邮件地址弹窗 -->
+        <div class="dizhi_t" v-show="hidden.isShowYouT">
+            <header>
+                <nav @click="goback_t"><img src="../../imgs/arrow_left.png"></nav>
+                <nav>邮件地址</nav>
+                <nav></nav>
+            </header>
+            <ul class="dizhi_ul">
+                <li class="dizhi_li01 clearfix"><span>邮箱地址1</span><input class="dizhi_i01" v-model="dizhi_txt01" type="text"></li>
+                <li class="dizhi_li02 clearfix"><span>邮箱地址2</span><input class="dizhi_i01" v-model="dizhi_txt02" type="text"></li>
+                <li class="dizhi_li03 clearfix"><span>邮箱地址3</span><input class="dizhi_i01" v-model="dizhi_txt03" type="text"></li>
+            </ul>
+            <div class="btn02"><button class="you_b" @click="you_f">确定</button></div>
+        </div>
+        <!-- 未填写的各种状态 -->
+        <div class="wei_tian" v-show="hidden.isShowWei">{{weiZhuang}}</div>
+    </section>
+</div>
+<script type="text/javascript">
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            hidden:{
+                isShowYouT:false,//填写邮件地址模块显隐
+                isShowWei:false,//未填写的各种状态显隐
+            },
+            si_z:'0',//控制邮件推送的字数
+            liu_z:'0',
+            si_txt:'',//超时邮件文本
+            liu_txt:'',//漏服邮件文本
+
+            dizhi_txt01:'',//邮件地址01
+            dizhi_txt02:'',//邮件地址02
+            dizhi_txt03:'',//邮件地址03
+
+            weiZhuang:'',//未填写的各种状态
+
+            is_e_chao:'',// 超时提醒推送开关状态
+            is_e_lou:'',// 漏服提醒推送开关状态
+
+            email:{},//邮件地址
+
+            is_e_chao_c:'1',// 超时提醒推送开关状态
+            is_e_lou_c:'1',// 漏服提醒推送开关状态
+
+        },
+        computed:{
+            
+        },
+        
+        mounted: function () {
+            var _this = this;
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+            var myurl = GetQueryString("device_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id =Number(GetQueryString("device_id").substr(1));
+            }
+            else {
+                //window.location.href = "http://192.168.0.138";
+            }
+            var role = GetQueryString("role");
+            if (role != null && role.toString().length > 1) {
+                _this.role = Number(GetQueryString("role").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var token = GetQueryString("token");
+            if (token != null && role.toString().length > 1) {
+                _this.token =GetQueryString("token").substr(1);
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+            var uid = GetQueryString("uid");
+            if (uid != null && role.toString().length > 1) {
+                _this.uid = Number(GetQueryString("uid").substr(1));
+
+            }
+            else {
+                //window.location.href =golinks("");
+
+            }
+
+            _this.aShou();
+        },
+        methods: {
+            goback:function () {
+                var _this=this;
+                window.location.href=golinks("dmanagement/notifications.html?token="+this.token+"&uid="+this.uid+"&device_id="+this.device_id+"&role="+this.role+"&off=1")
+            },
+            goback_t:function () {//点击隐藏邮件地址模块
+                var _this=this;
+                _this.hidden.isShowYouT = false;
+                _this.aShou();
+            },
+            youT_c(){//点击出现邮件地址模块
+                var _this=this;
+                _this.hidden.isShowYouT = true;
+            },
+            
+            jiaoz(){//邮件超时提醒推送开关
+                if($('.s_s_z').val() == '1'){
+                  $('.s_s').css('left','15px');
+                  $('.s_one').css('background','#00cc33');
+                  $('.s_one').css('border','2px solid #00cc33');
+                  $('.s_s_z').val('2');
+                  
+                }else if($('.s_s_z').val() == '2'){
+                  $('.s_s').css('left','0px');
+                  $('.s_one').css('background','#ccc');
+                  $('.s_one').css('border','2px solid #ccc');
+                  $('.s_s_z').val('1');
+                }
+            },
+            jiaoz01(){//邮件漏服提醒推送开关
+                if($('.s_s_z01').val() == '1'){
+                  $('.s_s01').css('left','15px');
+                  $('.s_one01').css('background','#00cc33');
+                  $('.s_one01').css('border','2px solid #00cc33');
+                  $('.s_s_z01').val('2');
+                  
+                }else if($('.s_s_z01').val() == '2'){
+                  $('.s_s01').css('left','0px');
+                  $('.s_one01').css('background','#ccc');
+                  $('.s_one01').css('border','2px solid #ccc');
+                  $('.s_s_z01').val('1');
+                  
+                }
+            },
+            si_t(){//超时推送邮件模板输入时监听字符
+                $(".si_t").attr({maxlength:"149"});//超出150字时，无法输入
+                // if(this.si_txt.length>150){
+
+                //     $('.si_t').css('color','red');
+                // }else if(this.si_txt.length<=150){
+                //     $('.si_t').css('color','#000');
+                //     // $(".si_t").removeAttr("maxlength");
+                // }
+                this.si_z = this.si_txt.length;
+            },
+            liu_t(){//超时推送邮件模板输入时监听字符
+                $(".liu_t").attr({maxlength:"149"});//超出150字时，无法输入
+                // if(this.liu_txt.length>150){
+                //     $('.liu_t').css('color','red');
+                // }else if(this.liu_txt.length<=150){
+                //     $('.liu_t').css('color','#000');
+                // }
+                this.liu_z = this.liu_txt.length;
+            },
+            que_btn(){//点击确定按钮
+                var re = /^[A-Za-z\d]+([-_.][A-Za-z\d]+)*@([A-Za-z\d]+[-.])+[A-Za-z\d]{2,4}$/; //验证邮箱地址正则
+                var _this = this;
+                _this.is_e_lou_c = $('.s_s_z01').val();//获取超时推送开关的状态
+                _this.is_e_chao_c = $('.s_s_z').val();//获取漏服推送开关的状态
+
+                if($('.s_s_z').val() == '2'&& $('.s_s_z01').val() == '1'){//超时开启、漏服不开启
+                    if(_this.dizhi_txt01 == ''&&_this.dizhi_txt02 == ''&&_this.dizhi_txt03 == ''){//当邮箱地址未填写时
+                        _this.weiZhuang = '未填写邮件地址';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.dizhi_txt01 != ''&&!re.test(_this.dizhi_txt01)){//邮件地址填写错误
+                        _this.weiZhuang = '邮件地址错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.dizhi_txt02 != ''&&!re.test(_this.dizhi_txt02)){
+                        _this.weiZhuang = '邮件地址错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.dizhi_txt03 != ''&&!re.test(_this.dizhi_txt03)){
+                        _this.weiZhuang = '邮件地址错误';
+                        _this.fenWei();
+                        return;
+                    }
+                    if(_this.si_txt == ''){//当邮件内容未填写时
+                        _this.weiZhuang = '未填写邮件内容';
+                        _this.fenWei();
+                        return;
+                    }
+                    
+                    if(_this.si_txt.length > '150'){//超时邮件字符超过150字时
+                        _this.weiZhuang = '邮件内容过多';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.si_txt.length < '10'){
+                        _this.weiZhuang = '邮件内容至少10字';
+                        _this.fenWei();
+                        return;
+                    }
+
+                    jsonAjax('/Home/Device/emailPushSetALL',
+                        {access_token:_this.token, device_id: _this.device_id, uid: _this.uid,is_e_chao: _this.is_e_chao_c,is_e_lou: _this.is_e_lou_c, e_chao_t:_this.si_txt, e_lou_t:""}
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            window.location.href= golinks("dmanagement/notifications.html?token="+_this.token+"&uid="+_this.uid+"&device_id="+_this.device_id+"&role="+_this.role+"&is_skips="+_this.is_skips+"")
+                        }
+                    })
+                    .fail(function () {
+                        
+                    });
+
+
+                }else if($('.s_s_z').val() == '1' && $('.s_s_z01').val() == '2'){//超时不开启、漏服开启
+
+                    if(_this.dizhi_txt01 == ''&&_this.dizhi_txt02 == ''&&_this.dizhi_txt03 == ''){//当邮箱地址未填写时
+                        _this.weiZhuang = '未填写邮件地址';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.dizhi_txt01 != ''&&!re.test(_this.dizhi_txt01)){//邮件地址填写错误
+                        _this.weiZhuang = '邮件地址错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.dizhi_txt02 != ''&&!re.test(_this.dizhi_txt02)){
+                        _this.weiZhuang = '邮件地址错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.dizhi_txt03 != ''&&!re.test(_this.dizhi_txt03)){
+                        _this.weiZhuang = '邮件地址错误';
+                        _this.fenWei();
+                        return;
+                    }
+
+                    if(_this.liu_txt == ''){//当邮件内容未填写时
+                        _this.weiZhuang = '未填写邮件内容';
+                        _this.fenWei();
+                        return;
+                    }
+                    
+                    if(_this.liu_txt.length > '150'){//超时邮件字符超过150字时
+                        _this.weiZhuang = '邮件内容过多';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.liu_txt.length < '10'){
+                        _this.weiZhuang = '邮件内容至少10字';
+                        _this.fenWei();
+                        return;
+                    }
+                    jsonAjax('/Home/Device/emailPushSetALL',
+                        {access_token:_this.token, device_id: _this.device_id, uid: _this.uid,is_e_chao: _this.is_e_chao_c,is_e_lou: _this.is_e_lou_c, e_chao_t:"", e_lou_t:_this.liu_txt}
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            window.location.href= golinks("dmanagement/notifications.html?token="+_this.token+"&uid="+_this.uid+"&device_id="+_this.device_id+"&role="+_this.role+"&is_skips="+_this.is_skips+"")
+                        }
+                    })
+                    .fail(function () {
+                        
+                    });
+                    
+                }else if($('.s_s_z').val() == '2' && $('.s_s_z01').val() == '2'){//超时与漏服推送都开启
+                    if(_this.dizhi_txt01 == ''&&_this.dizhi_txt02 == ''&&_this.dizhi_txt03 == ''){//当邮箱地址未填写时
+                        _this.weiZhuang = '未填写邮件地址';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.dizhi_txt01 != ''&&!re.test(_this.dizhi_txt01)){//邮件地址填写错误
+                        _this.weiZhuang = '邮件地址错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.dizhi_txt02 != ''&&!re.test(_this.dizhi_txt02)){
+                        _this.weiZhuang = '邮件地址错误';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.dizhi_txt03 != ''&&!re.test(_this.dizhi_txt03)){
+                        _this.weiZhuang = '邮件地址错误';
+                        _this.fenWei();
+                        return;
+                    }
+                    if(_this.si_txt == ''){//当邮件内容未填写时
+                        _this.weiZhuang = '未填写邮件内容';
+                        _this.fenWei();
+                        return;
+                    }
+                    
+                    if(_this.si_txt.length > '150'){//超时邮件字符超过150字时
+                        _this.weiZhuang = '邮件内容过多';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.si_txt.length < '10'){
+                        _this.weiZhuang = '邮件内容至少10字';
+                        _this.fenWei();
+                        return;
+                    }
+
+                    if(_this.liu_txt == ''){//当邮件内容未填写时
+                        _this.weiZhuang = '未填写邮件内容';
+                        _this.fenWei();
+                        return;
+                    }
+                    
+                    if(_this.liu_txt.length > '150'){//超时邮件字符超过150字时
+                        _this.weiZhuang = '邮件内容过多';
+                        _this.fenWei();
+                        return;
+                    }else if(_this.liu_txt.length < '10'){
+                        _this.weiZhuang = '邮件内容至少10字';
+                        _this.fenWei();
+                        return;
+                    }
+                    jsonAjax('/Home/Device/emailPushSetALL',
+                        {access_token:_this.token, device_id: _this.device_id, uid: _this.uid,is_e_chao: _this.is_e_chao_c,is_e_lou: _this.is_e_lou_c, e_chao_t:_this.si_txt, e_lou_t:_this.liu_txt}
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            window.location.href= golinks("dmanagement/notifications.html?token="+_this.token+"&uid="+_this.uid+"&device_id="+_this.device_id+"&role="+_this.role+"&is_skips="+_this.is_skips+"")
+                        }
+                    })
+                    .fail(function () {
+                        
+                    });
+                }else if($('.s_s_z').val() == '1' && $('.s_s_z01').val() == '1'){//超时与漏服推送都不开启
+                    jsonAjax('/Home/Device/emailPushSetALL',
+                        {access_token:_this.token, device_id: _this.device_id, uid: _this.uid,is_e_chao:"",is_e_lou: "", e_chao_t:"", e_lou_t:""}
+                    ).done(function (data) {
+                        console.log(data)
+                        if(data.code == '0'){
+                            window.location.href= golinks("dmanagement/notifications.html?token="+_this.token+"&uid="+_this.uid+"&device_id="+_this.device_id+"&role="+_this.role+"&is_skips="+_this.is_skips+"")
+                        }
+                    })
+                    .fail(function () {
+                        
+                    });
+                    return;
+                }
+
+                _this.fenWei();
+                
+            },
+            // 邮件地址处确定返回数据后端
+            you_f(){
+                var _this = this;
+                if(_this.dizhi_txt01 != '' && _this.dizhi_txt02 != '' && _this.dizhi_txt03 != '' ){
+                    _this.email = [_this.dizhi_txt01,_this.dizhi_txt02,_this.dizhi_txt03];
+                }else if(_this.dizhi_txt01 != '' && _this.dizhi_txt02 != '' && _this.dizhi_txt03 == ''){
+                    _this.email = [_this.dizhi_txt01,_this.dizhi_txt02];
+                }else if(_this.dizhi_txt01 != '' && _this.dizhi_txt02 == '' && _this.dizhi_txt03 != ''){
+                    _this.email = [_this.dizhi_txt01,_this.dizhi_txt03];
+                }else if(_this.dizhi_txt01 != '' && _this.dizhi_txt02 == '' && _this.dizhi_txt03 == ''){
+                    _this.email = [_this.dizhi_txt01];
+                }else if(_this.dizhi_txt01 == '' && _this.dizhi_txt02 != '' && _this.dizhi_txt03 != ''){
+                    _this.email = [_this.dizhi_txt02,_this.dizhi_txt03];
+                }else if(_this.dizhi_txt01 == '' && _this.dizhi_txt02 != '' && _this.dizhi_txt03 == ''){
+                    _this.email = [_this.dizhi_txt02];
+                }else if(_this.dizhi_txt01 == '' && _this.dizhi_txt02 == '' && _this.dizhi_txt03 != ''){
+                    _this.email = [_this.dizhi_txt03];
+                }else if(_this.dizhi_txt01 == '' && _this.dizhi_txt02 != '' && _this.dizhi_txt03 != ''){
+                    _this.email = [_this.dizhi_txt02,_this.dizhi_txt03];
+                }else if(_this.dizhi_txt01 == '' && _this.dizhi_txt02 == '' && _this.dizhi_txt03 == ''){
+                    _this.email = [];
+                }
+
+                jsonAjax('/Home/Device/emailPushSetEmail',
+                    JSON.stringify({access_token:_this.token, device_id: _this.device_id, uid: _this.uid,email: _this.email})
+                ).done(function (data) {
+                    console.log(data)
+                    if(data.code == '0'){
+                        _this.hidden.isShowYouT = false;
+                    }else{
+                        _this.weiZhuang = data.msg;
+                        _this.fenWei02();
+                        // _this.fenWei();
+                    }
+                })
+                .fail(function () {
+                    console.log("error");
+                });
+            },  
+
+            aShou(){
+                var _this = this;
+                //进入邮箱推送页面请求接口
+                jsonAjax('/Home/Device/emailGetAllInfo',
+                    {access_token:_this.token, device_id: _this.device_id, uid: _this.uid}
+                ).done(function (data) {
+                    console.log(data)
+                    _this.is_e_chao = data.data[0].is_e_chao;//超时邮件模板
+                    _this.is_e_lou = data.data[0].is_e_lou;//漏服邮件模板
+
+                    _this.si_txt = data.data[0].e_chao_t;//超时邮件推送开关状态
+                    if(data.data[0].e_chao_t == ""){
+                        _this.si_txt = "【智能药盒】医生说，准时吃药病才能好的快。您超时啦！"
+                    }
+                    _this.liu_txt = data.data[0].e_lou_t;//漏服邮件推送开关状态
+                    if(data.data[0].e_lou_t == ""){
+                        _this.liu_txt = "【智能药盒】医生说，准时吃药病才能好的快。您忘记服药啦！"
+                    }
+
+                    _this.dizhi_txt01 = data.data[0].email[0];// 接收邮箱地址
+                    _this.dizhi_txt02 = data.data[0].email[1];
+                    _this.dizhi_txt03 = data.data[0].email[2];
+                    if(data.data[0].email[0] == undefined){//当接收到的邮箱地址为undefined时
+                        _this.dizhi_txt01 = '';
+                    }
+                    if(data.data[0].email[1] == undefined){
+                        _this.dizhi_txt02 = '';
+                    }
+                    if(data.data[0].email[2] == undefined){
+                        _this.dizhi_txt03 = '';
+                    }
+                    console.log(_this.dizhi_txt03)
+
+                    // 判定超时开关是否开启
+                    if(_this.is_e_chao == '1'){
+                        $('.s_s').css('left','0px');
+                        $('.s_one').css('background','#ccc');
+                        $('.s_one').css('border','2px solid #ccc');
+                        $('.s_s_z').val('1');
+                    }else if(_this.is_e_chao == '2'){
+                        $('.s_s').css('left','15px');
+                        $('.s_one').css('background','#00cc33');
+                        $('.s_one').css('border','2px solid #00cc33');
+                        $('.s_s_z').val('2');
+                    }
+
+                    // 判定漏服开关是否开启
+                    if(_this.is_e_lou == '1'){
+                        $('.s_s01').css('left','0px');
+                        $('.s_one01').css('background','#ccc');
+                        $('.s_one01').css('border','2px solid #ccc');
+                        $('.s_s_z01').val('1');
+                    }else if(_this.is_e_lou == '2'){
+                        $('.s_s01').css('left','15px');
+                        $('.s_one01').css('background','#00cc33');
+                        $('.s_one01').css('border','2px solid #00cc33');
+                        $('.s_s_z01').val('2');
+                    }
+
+                    //一进入页面邮件模板有默认内容，需在进入页面的时候计算文字长度
+                    _this.si_z = _this.si_txt.length;
+                    _this.liu_z = _this.liu_txt.length;
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },
+
+
+            // 封装确定按钮防止多次点击
+            fenWei(){
+                var _this = this;
+                _this.hidden.isShowWei = true;
+                $('.btn').addClass('active');
+                setTimeout(function(){
+                    _this.hidden.isShowWei = false;
+                    $('.btn').removeClass('active');
+                }, 2000);
+
+            },
+            // 封装确定按钮防止多次点击
+            fenWei02(){
+                var _this = this;
+                _this.hidden.isShowWei = true;
+                $('.you_b').addClass('active');
+                setTimeout(function(){
+                    _this.hidden.isShowWei = false;
+                    $('.you_b').removeClass('active');
+                }, 2000);
+
+            },
+            
+        }
+
+    });
+
+</script>
+</body>
+
+</html>
+

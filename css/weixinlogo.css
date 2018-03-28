@@ -1,0 +1,118 @@
+.vm {
+  vertical-align: middle;
+  display: inline-table;
+}
+.mto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.co {
+  cursor: none;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(255, 0, 0, 0);
+}
+.ipt {
+  box-sizing: border-box;
+  font-size: 1rem ;
+  cursor: none;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(255, 0, 0, 0);
+  -webkit-appearance: none;
+}
+.es {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+}
+.selsty {
+  appearance: none;
+}
+.selsty::-ms-expand {
+  display: none;
+}
+.fexm {
+  display: flex ;
+  flex-direction: row ;
+  flex-wrap: wrap ;
+  justify-content: space-around;
+  align-items: center ;
+  align-content: center ;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  -webkit-justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+}
+.fest {
+  display: flex ;
+  flex-direction: row ;
+  flex-wrap: wrap ;
+  justify-content: flex-start;
+  align-items: center ;
+  align-content: flex-start;
+}
+.scl {
+  -webkit-text-size-adjust: none;
+  -webkit-touch-callout: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.boxsh {
+  box-shadow: 0px 6px 6px rgba(3, 143, 16, 0.49);
+  background: #14cc4c;
+  color: #fff;
+  font-size: 1rem ;
+}
+section {
+  width: 19.36666667rem;
+  margin-top: 6.66666667rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+section .logo {
+  width: 15.46666667rem;
+  height: 2.63333333rem;
+}
+section .logo img {
+  width: 15.46666667rem;
+  height: 2.63333333rem;
+}
+section .title {
+  width: 19.36666667rem;
+  margin-top: 5rem;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 0.93333333rem ;
+  line-height: 1.33333333rem;
+  margin-bottom: 4.33333333rem;
+}
+section .signin {
+  box-sizing: border-box;
+  font-size: 1rem ;
+  cursor: none;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(255, 0, 0, 0);
+  -webkit-appearance: none;
+  height: 2.4rem;
+  border-radius: 2.26666667rem;
+  width: 16rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2rem;
+  background: #a2a2a2;
+  color: #fff;
+  box-shadow: 0px 6px 6px rgba(97, 99, 97, 0.49);
+  display: block;
+  border: none;
+}
+section .signinup {
+  box-shadow: 0px 6px 6px rgba(3, 143, 16, 0.49);
+  color: #fff;
+  background: #00cc33;
+}

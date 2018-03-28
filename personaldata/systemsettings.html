@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" href="../css/myequipment.css">
+    <link rel="stylesheet" href="../css/systemsettings.css">
+    <script src="../js/jsonAjax.js"></script>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/fontzize.js"></script>
+    <script src="../js/vue.min.js"></script>
+
+</head>
+<body>
+<div id="app">
+    <section>
+        <dl>
+            <dd >关于我们</dd>
+            <dd @click="popups"><span v-html="device_name"></span><img src="../imgs/arrow_right.png"/></dd>
+        </dl>
+        <dl>
+            <dd>系统语言</dd>
+            <dd> <span v-html="getdata.device_name"></span> <img src="../imgs/arrow_right.png"/></dd>
+        </dl>
+        <dl>
+            <dd>系统版本</dd>
+            <dd> <span v-html="getdata.device_sn"></span> <img src="../imgs/arrow_right.png"/></dd>
+        </dl>
+        <dl>
+            <dd>清楚缓存</dd>
+            <dd> <span v-html="getdata.device_sn"></span> <img src="../imgs/arrow_right.png"/></dd>
+        </dl>
+
+            <input type="button" class="signin" value="退出当前账号" class="Exitcurrent" @click="Exitcurrent" >
+
+
+    </section>
+    <aside>
+        <div class="popup" v-if="pupo" >
+            <div class="editor_box">
+                <div class="editor">设备名称<br>
+                    <input type="text" :placeholder ="getdata.my_device_name" v-model="device_name">
+                </div>
+                <div class="determination" @click="determine">确定</div>
+                <div class="cancelled" @click="cancel">取消</div>
+            </div>
+        </div>
+    </aside>
+
+</div>
+<script type="text/javascript">
+    var rawdata;
+    Vue.config.debug = true;
+    app = new Vue({
+        el: "#app",
+        data: {
+            getdata:{},
+            pupo:false,
+            device_name:''
+        },
+        watch:{
+            'device_name':function (newVal, oldVal) {
+                console.log(oldVal);
+                if(newVal.length<3){
+                    return oldVal;
+                }
+            }
+
+        },
+        mounted: function () {
+            var _this = this;
+            //获取外部链接参数
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)return unescape(r[2]);
+                return null;
+            }
+            var myurl = GetQueryString("device_id");
+            if (myurl != null && myurl.toString().length > 1) {
+                _this.device_id =Number(GetQueryString("device_id").substr(1));
+            }
+            else {
+              //  window.location.href =golinks("");
+            }
+            setTimeout(function () {
+                getStages('user');
+            },80);
+            setTimeout(function () {
+                _this.token = StagesDatas.usermsg.access_token;
+                _this.uid = StagesDatas.usermsg.uid;
+                //10 获取用户信息√
+                jsonAjax("/Home/Device/get_device_info",
+                    {access_token:_this.token,device_id: _this.device_id, uid: _this.uid}
+                ).done(function (data) {
+                    if(data.code==40002){
+                       window.location.href=golinks('weixinsq.html')
+                    }
+                    if(data.code==40010){
+                        window.location.href=golinks('weixinsq.html')
+                    }
+                    else if(data.code ==0){
+                        rawdata=data.data.my_device_name;
+                        _this.device_name=data.data.my_device_name;
+                        _this.getdata=data.data;
+                    }
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },300);
+        },
+        methods: {
+            popups:function () {
+                this.pupo=true;
+            },
+            determine:function () {
+                var _this=this;
+                if(_this.device_name<1){
+                    alert("设备名称不能为空！");
+                    _this.device_name=rawdata;
+                    return false;
+
+                };
+                jsonAjax("/Home/Device/edit_my_device_name",{
+                    access_token:_this.token,
+                    device_id: _this.device_id,
+                    my_device_name:_this.device_name,
+                    uid: _this.uid
+                }).done(function (data) {
+                    console.log(data);
+                    //改变本地数据类型
+                    _this.getdevice_ids();
+                    _this.pupo=false;
+                })
+                    .fail(function () {
+                        console.log("error");
+                    });
+            },
+            getdevice_ids:function () {
+                var _this=this;
+                var lisdata=JSON.parse(localStorage.getItem('device_ids'));
+                var lisarry=[];
+                for(var i=0; i<lisdata.length; i++){
+                    lisarry.push(lisdata[i].my_device_name);
+                }
+                var index=lisarry.indexOf(rawdata);
+                 lisdata[index].my_device_name=_this.device_name;
+                 window.localStorage.setItem("device_ids",JSON.stringify(lisdata));
+            },
+            cancel:function () {
+                if(this.device_name<1){
+                    this.device_name=rawdata;
+                    return false;
+                };
+                this.pupo=false;
+            },
+            goback:function () {
+                window.location.href= golinks("dmanagement/devicedetails.html?device_id="+this.device_id+"")
+            },
+            configuration:function () {
+
+            },
+            Exitcurrent:function () {
+                    clears();
+            }
+
+        }
+
+    });
+
+</script>
+</body>
+
+</html>
+
